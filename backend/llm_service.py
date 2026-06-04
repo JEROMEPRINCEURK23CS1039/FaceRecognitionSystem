@@ -124,7 +124,6 @@ def get_llm() -> Llama:
                         "Please download the GGUF model and place it in backend/models/."
                     )
             # Maximize resource utilization per user request
-            import os
             cores = os.cpu_count() or 4
             # Use all available CPU cores without artificial limits
             max_threads = cores
