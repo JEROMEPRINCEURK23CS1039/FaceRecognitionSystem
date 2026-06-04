@@ -38,25 +38,13 @@ def _load_dotenv():
 
 _load_dotenv()
 
-# Detect if Gemini API key is provided and library is installed
+# Force local/in-container Qwen GGUF model everywhere (including Hugging Face Spaces)
 USE_GEMINI = False
-if os.getenv("GEMINI_API_KEY") is not None:
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        USE_GEMINI = True
-    except ImportError:
-        print("GEMINI_API_KEY set but google-generativeai is not installed. Falling back to local Llama.")
-        USE_GEMINI = False
 
-
-if USE_GEMINI:
+try:
+    from llama_cpp import Llama
+except ImportError:
     Llama = None
-else:
-    try:
-        from llama_cpp import Llama
-    except ImportError:
-        Llama = None
 
 MODEL_PATH = os.getenv("LLM_MODEL_PATH", "models/qwen.gguf")
 
@@ -147,10 +135,24 @@ def get_llm() -> Llama:
             if Llama is None:
                 raise ImportError("llama-cpp-python is not installed.")
             if not os.path.exists(MODEL_PATH):
-                raise FileNotFoundError(
-                    f"Model not found at '{MODEL_PATH}'. "
-                    "Please download the GGUF model and place it in backend/models/."
-                )
+                print(f"Model not found at '{MODEL_PATH}'. Downloading Qwen-1.5B-Instruct GGUF...")
+                os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+                import urllib.request
+                url = "https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_k_m.gguf"
+                try:
+                    def report(block_num, block_size, total_size):
+                        read_so_far = block_num * block_size
+                        if total_size > 0:
+                            percent = read_so_far * 100.0 / total_size
+                            if block_num % 1000 == 0 or read_so_far >= total_size:
+                                print(f"Downloading Qwen GGUF: {percent:.1f}% ({read_so_far / (1024**2):.1f} MB / {total_size / (1024**2):.1f} MB)")
+                    urllib.request.urlretrieve(url, MODEL_PATH, reporthook=report)
+                    print("Download complete!")
+                except Exception as download_err:
+                    raise FileNotFoundError(
+                        f"Model not found at '{MODEL_PATH}' and auto-download failed: {download_err}. "
+                        "Please download the GGUF model and place it in backend/models/."
+                    )
             _llm = Llama(
                 model_path=MODEL_PATH,
                 n_ctx=4096,

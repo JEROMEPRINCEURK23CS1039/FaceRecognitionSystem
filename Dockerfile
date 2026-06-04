@@ -14,10 +14,12 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies (only runtime tools for OpenCV/graphics, no compilers needed)
+# Install system dependencies (including compiler tools to compile llama-cpp-python)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
+    build-essential \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies for cloud mode (uses requirements-cloud.txt)
