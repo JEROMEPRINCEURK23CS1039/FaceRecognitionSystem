@@ -1,4 +1,14 @@
+---
+title: Face Recognition System
+emoji: 🔐
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+---
+
 # Face detection System — Setup
+
 
 This document shows how to install Python and Node.js and configure the project on Windows (PowerShell) and Unix-like systems.
 

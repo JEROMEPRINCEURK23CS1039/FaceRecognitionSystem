@@ -461,6 +461,24 @@ def remove_secret(secret_id: int, user_name: str):
     return {"status": "success", "message": "Secret permanently destroyed."}
 
 
+# ---------------------------------------------------------------------------
+# Serve frontend static files
+# ---------------------------------------------------------------------------
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+if os.path.exists(static_path):
+    app.mount("/", StaticFiles(directory=static_path, html=True), name="static")
+
+    # Catch-all route to support client-side routing
+    @app.get("/{catchall:path}")
+    async def read_index(catchall: str):
+        if catchall.startswith("api"):
+            raise HTTPException(status_code=404, detail="Not Found")
+        return FileResponse(os.path.join(static_path, "index.html"))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

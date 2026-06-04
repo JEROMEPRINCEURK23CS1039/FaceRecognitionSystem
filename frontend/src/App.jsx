@@ -10,7 +10,9 @@ import GradientText from './GradientText';
 import NeuralLogo from './NeuralLogo';
 
 // API base
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+  ? 'http://127.0.0.1:8000/api'
+  : `${window.location.origin}/api`;
 
 const getPasswordStrength = (pass) => {
   if (!pass) return { score: 0, text: 'None', color: 'text-slate-500', barColor: 'bg-slate-500/20' };
