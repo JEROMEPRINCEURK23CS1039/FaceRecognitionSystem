@@ -250,7 +250,7 @@ function App() {
 
   const analyzeLogs = async () => {
     setIsAnalyzing(true);
-    setLlmAnalysis("Connecting to Qwen Local LLM... Analyzing logs...");
+    setLlmAnalysis("Connecting to AI Core... Analyzing logs...");
     try {
       const res = await fetch(`${API_BASE}/logs/analysis`);
       const data = await res.json();
@@ -1730,7 +1730,9 @@ function App() {
                     <BrainCircuit className="w-5 h-5 text-cyan-400 animate-pulse" />
                     <div>
                       <h4 className="font-bold text-sm text-white">AI Security Assistant</h4>
-                      <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono">Local Qwen 1.5B</p>
+                      <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono">
+                        {aiCoreStatus.threads === 0 ? "Google Gemini 2.5" : "Local Qwen 1.5B"}
+                      </p>
                     </div>
                   </div>
                   <button 
