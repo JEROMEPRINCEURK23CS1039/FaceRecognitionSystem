@@ -38,16 +38,8 @@ def _load_dotenv():
 
 _load_dotenv()
 
-# Detect if Gemini API key is provided and library is installed
+# User requested exclusively using the local Qwen model (in cloud and locally)
 USE_GEMINI = False
-if os.getenv("GEMINI_API_KEY") is not None:
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        USE_GEMINI = True
-    except ImportError:
-        print("GEMINI_API_KEY set but google-generativeai is not installed. Falling back to local Llama.")
-        USE_GEMINI = False
 
 try:
     from llama_cpp import Llama
@@ -89,44 +81,14 @@ def _call_local(prompt: str, max_tokens: int, temperature: float) -> str:
     return output["choices"][0]["text"].strip()
 
 
-def _call_gemini(system: str, user: str, response_json: bool = False) -> str:
-    """Send prompt to Gemini API and get text response."""
-    generation_config = {}
-    if response_json:
-        generation_config["response_mime_type"] = "application/json"
-    try:
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=system,
-            generation_config=generation_config
-        )
-        response = model.generate_content(user)
-        try:
-            if response.candidates and len(response.candidates) > 0 and response.candidates[0].content.parts:
-                return response.text.strip()
-            else:
-                return "Error: Gemini returned an empty or blocked response."
-        except (ValueError, AttributeError) as ve:
-            print(f"Gemini response parsing error: {ve}")
-            return "Error: Gemini response blocked by safety filters."
-    except Exception as e:
-        print(f"GEMINI API ERROR: {e}")
-        if response_json:
-            return "{}"
-        return f"Error communicating with AI Core: {e}"
-
-
 def _qwen(system: str, user: str, max_tokens: int, temperature: float, response_json: bool = False) -> str:
-    """Unified wrapper that handles both Gemini and Qwen local formats."""
-    if USE_GEMINI:
-        return _call_gemini(system, user, response_json)
-    else:
-        prompt = (
-            f"<|im_start|>system\n{system}<|im_end|>\n"
-            f"<|im_start|>user\n{user}<|im_end|>\n"
-            f"<|im_start|>assistant\n"
-        )
-        return _call_local(prompt, max_tokens, temperature)
+    """Wrapper that formats the prompt for the local Qwen GGUF model."""
+    prompt = (
+        f"<|im_start|>system\n{system}<|im_end|>\n"
+        f"<|im_start|>user\n{user}<|im_end|>\n"
+        f"<|im_start|>assistant\n"
+    )
+    return _call_local(prompt, max_tokens, temperature)
 
 
 # ---------------------------------------------------------------------------
@@ -161,15 +123,16 @@ def get_llm() -> Llama:
                         f"Model not found at '{MODEL_PATH}' and auto-download failed: {download_err}. "
                         "Please download the GGUF model and place it in backend/models/."
                     )
-            # Calculate optimal thread count based on CPU core count to prevent context-switching overhead
+            # Maximize resource utilization per user request
             import os
             cores = os.cpu_count() or 4
-            optimal_threads = max(1, min(cores, 4)) if cores <= 4 else int(cores * 0.75)
+            # Use all available CPU cores without artificial limits
+            max_threads = cores
 
             _llm = Llama(
                 model_path=MODEL_PATH,
-                n_ctx=4096,
-                n_threads=optimal_threads,
+                n_ctx=8192,          # Maximize context window
+                n_threads=max_threads,
                 n_gpu_layers=99,     # Offload all layers to GPU if available
                 verbose=False,
             )
@@ -262,36 +225,13 @@ def chat_with_assistant(user_message: str, chat_history: list, logs_data: str) -
         f"Recent System Logs:\n{logs_data}"
     )
     
-    if USE_GEMINI:
-        contents = []
-        for msg in chat_history[-6:]:
-            role = "user" if msg.get("role") == "user" else "model"
-            contents.append({"role": role, "parts": [msg.get("content", "")]})
-        contents.append({"role": "user", "parts": [user_message]})
-        
-        try:
-            model = genai.GenerativeModel(
-                model_name="gemini-2.5-flash",
-                system_instruction=system
-            )
-            response = model.generate_content(contents)
-            try:
-                if response.candidates and len(response.candidates) > 0 and response.candidates[0].content.parts:
-                    return response.text.strip()
-                else:
-                    return "Error: Gemini returned an empty or blocked response."
-            except (ValueError, AttributeError) as ve:
-                print(f"Gemini chat response parsing error: {ve}")
-                return "Error: Gemini response blocked by safety filters."
-        except Exception as e:
-            return f"Error communicating with AI Core: {e}"
-    else:
-        # Build full prompt manually to include history (last 3 turns)
-        prompt = f"<|im_start|>system\n{system}<|im_end|>\n"
-        for msg in chat_history[-6:]:
-            prompt += f"<|im_start|>{msg.get('role', 'user')}\n{msg.get('content', '')}<|im_end|>\n"
-        prompt += f"<|im_start|>user\n{user_message}<|im_end|>\n<|im_start|>assistant\n"
-        return _call_local(prompt, 300, 0.7)
+    # Build full prompt manually to include history (last 3 turns)
+    prompt = f"<|im_start|>system\n{system}<|im_end|>\n"
+    for msg in chat_history[-6:]:
+        prompt += f"<|im_start|>{msg.get('role', 'user')}\n{msg.get('content', '')}<|im_end|>\n"
+    prompt += f"<|im_start|>user\n{user_message}<|im_end|>\n<|im_start|>assistant\n"
+    # Increased token limit and utilized max local settings
+    return _call_local(prompt, 512, 0.7)
 
 
 def audit_password_strength(password: str, label: str) -> str:
