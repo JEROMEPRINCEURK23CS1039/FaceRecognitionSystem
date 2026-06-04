@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Space+Grotesk', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #070a13;
+  color: #f1f5f9;
+  overflow-x: hidden;
+}
+
+/* Glassmorphic Panel styling rules */
+.glass-panel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(13, 17, 28, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(6, 182, 212, 0.05);
+  
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --spotlight-color: rgba(6, 182, 212, 0.15); /* Cyan glow */
+  z-index: 1;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 300px at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: -1;
+}
+
+.glass-panel:hover::before {
+  opacity: 1;
+}
+
+.glass-panel-glow {
+  background: rgba(13, 17, 28, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.15);
+}
+
+/* Cybernetic Mesh Background with shifting colors */
+.mesh-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -10;
+  background: radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+              #070a13;
+  filter: blur(80px);
+  animation: bg-shift 20s ease-in-out infinite alternate;
+}
+
+@keyframes bg-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+/* Biometric Scanner Laser Line Animation */
+.laser-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+  box-shadow: 0 0 15px 4px rgba(6, 182, 212, 0.5);
+  animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  z-index: 10;
+}
+
+@keyframes scan {
+  0% {
+    top: 5%;
+  }
+  50% {
+    top: 95%;
+  }
+  100% {
+    top: 5%;
+  }
+}
+
+/* Neon Glows */
+.glow-cyan {
+  text-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+}
+
+.glow-violet {
+  text-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.glow-emerald {
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Lateral card shaking on failure */
+.shake-effect {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070a13;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.2);
+}
+
+/* ========== Key-Store Vault Styles ========== */
+
+.vault-locked {
+  border-color: rgba(255, 255, 255, 0.05);
+  transition: border-color 0.5s ease;
+}
+
+.vault-unlocked {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.08);
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.secret-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.secret-row:hover {
+  background: rgba(6, 182, 212, 0.05);
+  border-color: rgba(6, 182, 212, 0.15);
+}
+
+.masked-value {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  color: rgba(148, 163, 184, 0.6);
+  user-select: none;
+}
+
+.revealed-value {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+  color: #06b6d4;
+  word-break: break-all;
+}
+
+.ttl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  animation: ttl-pulse 1s ease-in-out infinite;
+}
+
+@keyframes ttl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

@@ -1,0 +1,32 @@
+# Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Project specific database
+biometric_vault.db
+
+# Large model files and weights
+*.gguf
+backend/models/
+
+# Frontend dependency & build artifacts (in case not covered by nested .gitignore)
+node_modules/
+dist/
+dist-ssr/
+
+# IDE files
+.vscode/
+.idea/
+.DS_Store
+
+# Agent-specific directories
+.agents/

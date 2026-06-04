@@ -1,0 +1,51 @@
+.animated-gradient-text {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  transition: box-shadow 0.5s ease-out;
+}
+
+/* Only apply box/border styling when showBorder is true */
+.animated-gradient-text.with-border {
+  border-radius: 1.25rem;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Background overlay inside the border should match our project theme */
+.gradient-overlay::before {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(15, 23, 42, 0.85); /* Match project glass slate-900 bg */
+  z-index: -1;
+}
+
+.text-content {
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
