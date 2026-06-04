@@ -1201,66 +1201,98 @@ function App() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <BrainCircuit className="w-3.5 h-3.5 text-cyan-400" />
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Engine & RAM Optimizer</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            {aiCoreStatus.threads === 0 ? "AI Core (Cloud Engine)" : "AI Engine & RAM Optimizer"}
+                          </span>
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                           aiCoreStatus.loaded 
                             ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400 animate-pulse' 
                             : 'bg-white/5 border-white/10 text-slate-400'
                         }`}>
-                          {aiCoreStatus.loaded ? 'ACTIVE / LOADED' : 'STANDBY / IDLE'}
+                          {aiCoreStatus.loaded 
+                            ? (aiCoreStatus.threads === 0 ? 'ACTIVE / CLOUD' : 'ACTIVE / LOADED') 
+                            : 'STANDBY / IDLE'}
                         </span>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-2 text-[10px]">
-                        <div className="space-y-0.5">
-                          <span className="text-slate-400">RAM Status: </span>
-                          <span className="font-bold text-white">
-                            {aiCoreStatus.loaded ? '1.5 GB Allocated (8.0 GB Permitted)' : '0.0 GB (8.0 GB Permitted)'}
-                          </span>
-                        </div>
-                        <div className="space-y-0.5 text-right">
-                          <span className="text-slate-400">Execution Limit: </span>
-                          <span className="font-bold text-white">9 Threads / 85% GPU (No Limits)</span>
-                        </div>
-                      </div>
+                      {aiCoreStatus.threads === 0 ? (
+                        /* Cloud Gemini API Mode view */
+                        <>
+                          <div className="grid grid-cols-2 gap-2 text-[10px]">
+                            <div className="space-y-0.5">
+                              <span className="text-slate-400">Connection: </span>
+                              <span className="font-bold text-emerald-400">Gemini 2.5 Flash API</span>
+                            </div>
+                            <div className="space-y-0.5 text-right">
+                              <span className="text-slate-400">Platform: </span>
+                              <span className="font-bold text-white">Google TPU/GPU Cloud</span>
+                            </div>
+                          </div>
 
-                      {aiCoreStatus.loaded && (
-                        <div className="text-[10px] bg-cyan-500/5 border border-cyan-500/10 px-3 py-1.5 rounded-lg flex justify-between items-center text-cyan-200">
-                          <span>Automatic Auto-Unload:</span>
-                          <span className="font-mono font-bold uppercase">
-                            {aiCoreStatus.persistent ? 'Disabled (Persistent Mode)' : (() => {
-                              const s = aiCoreStatus.idle_time_remaining_seconds;
-                              const min = Math.floor(s / 60);
-                              const sec = Math.floor(s % 60);
-                              return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-                            })()}
-                          </span>
-                        </div>
+                          <div className="text-[10px] bg-cyan-500/5 border border-cyan-500/10 px-3 py-1.5 rounded-lg flex justify-between items-center text-cyan-200">
+                            <span>Resource Optimization:</span>
+                            <span className="font-bold uppercase text-emerald-400">1.2 GB Server RAM Freed</span>
+                          </div>
+
+                          <div className="text-[10px] text-center text-slate-500 italic py-1 border-t border-white/5">
+                            Always Online — Zero Latency Cloud Inference
+                          </div>
+                        </>
+                      ) : (
+                        /* Local Llama GGUF Mode view */
+                        <>
+                          <div className="grid grid-cols-2 gap-2 text-[10px]">
+                            <div className="space-y-0.5">
+                              <span className="text-slate-400">RAM Status: </span>
+                              <span className="font-bold text-white">
+                                {aiCoreStatus.loaded ? '1.5 GB Allocated (8.0 GB Permitted)' : '0.0 GB (8.0 GB Permitted)'}
+                              </span>
+                            </div>
+                            <div className="space-y-0.5 text-right">
+                              <span className="text-slate-400">Execution Limit: </span>
+                              <span className="font-bold text-white">{aiCoreStatus.threads} Threads / 85% GPU (No Limits)</span>
+                            </div>
+                          </div>
+
+                          {aiCoreStatus.loaded && (
+                            <div className="text-[10px] bg-cyan-500/5 border border-cyan-500/10 px-3 py-1.5 rounded-lg flex justify-between items-center text-cyan-200">
+                              <span>Automatic Auto-Unload:</span>
+                              <span className="font-mono font-bold uppercase">
+                                {aiCoreStatus.persistent ? 'Disabled (Persistent Mode)' : (() => {
+                                  const s = aiCoreStatus.idle_time_remaining_seconds;
+                                  const min = Math.floor(s / 60);
+                                  const sec = Math.floor(s % 60);
+                                  return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+                                })()}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            {aiCoreStatus.loaded ? (
+                              <button
+                                onClick={unloadLLM}
+                                disabled={isControllingLLM}
+                                className="flex-grow py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/25 hover:bg-rose-500/25 text-rose-300 text-[10px] font-bold transition-all disabled:opacity-50"
+                              >
+                                {isControllingLLM ? 'Reclaiming...' : 'Purge LLM from RAM'}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={preloadLLM}
+                                disabled={isControllingLLM}
+                                className="flex-grow py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 hover:bg-cyan-500/25 text-cyan-300 text-[10px] font-bold transition-all disabled:opacity-50"
+                              >
+                                {isControllingLLM ? 'Preloading...' : 'Pre-warm AI Core'}
+                              </button>
+                            )}
+                          </div>
+                        </>
                       )}
-
-
-                      <div className="flex gap-2">
-                        {aiCoreStatus.loaded ? (
-                          <button
-                            onClick={unloadLLM}
-                            disabled={isControllingLLM}
-                            className="flex-grow py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/25 hover:bg-rose-500/25 text-rose-300 text-[10px] font-bold transition-all disabled:opacity-50"
-                          >
-                            {isControllingLLM ? 'Reclaiming...' : 'Purge LLM from RAM'}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={preloadLLM}
-                            disabled={isControllingLLM}
-                            className="flex-grow py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 hover:bg-cyan-500/25 text-cyan-300 text-[10px] font-bold transition-all disabled:opacity-50"
-                          >
-                            {isControllingLLM ? 'Preloading...' : 'Pre-warm AI Core'}
-                          </button>
-                        )}
-                      </div>
                     </div>
                   )}
+
 
                   {/* AI Security Score Circular Gauge Widget */}
                   {isLoggedIn && (
