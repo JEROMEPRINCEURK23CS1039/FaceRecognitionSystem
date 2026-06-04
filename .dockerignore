@@ -1,0 +1,20 @@
+# Ignore node modules
+node_modules/
+**/node_modules/
+
+# Ignore local python environments
+.venv/
+env/
+venv/
+__pycache__/
+*.pyc
+
+# Ignore git and IDE configurations
+.git
+.gitignore
+.vscode/
+.idea/
+
+# Ignore local model weights and database
+biometric_vault.db
+backend/models/
