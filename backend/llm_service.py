@@ -38,8 +38,16 @@ def _load_dotenv():
 
 _load_dotenv()
 
-# Force local/in-container Qwen GGUF model everywhere (including Hugging Face Spaces)
+# Detect if Gemini API key is provided and library is installed
 USE_GEMINI = False
+if os.getenv("GEMINI_API_KEY") is not None:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        USE_GEMINI = True
+    except ImportError:
+        print("GEMINI_API_KEY set but google-generativeai is not installed. Falling back to local Llama.")
+        USE_GEMINI = False
 
 try:
     from llama_cpp import Llama
@@ -153,10 +161,15 @@ def get_llm() -> Llama:
                         f"Model not found at '{MODEL_PATH}' and auto-download failed: {download_err}. "
                         "Please download the GGUF model and place it in backend/models/."
                     )
+            # Calculate optimal thread count based on CPU core count to prevent context-switching overhead
+            import os
+            cores = os.cpu_count() or 4
+            optimal_threads = max(1, min(cores, 4)) if cores <= 4 else int(cores * 0.75)
+
             _llm = Llama(
                 model_path=MODEL_PATH,
                 n_ctx=4096,
-                n_threads=9,         # ~75% of 12 logical threads
+                n_threads=optimal_threads,
                 n_gpu_layers=99,     # Offload all layers to GPU if available
                 verbose=False,
             )
