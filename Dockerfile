@@ -14,21 +14,16 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies for OpenCV, MediaPipe, and compiling llama-cpp-python
+# Install system dependencies (only runtime tools for OpenCV/graphics, no compilers needed)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    git \
-    curl \
     libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies
-COPY backend/requirements.txt ./
+# Install python dependencies for cloud mode (uses requirements-cloud.txt)
+COPY backend/requirements-cloud.txt ./
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir "https://github.com/abetlen/llama-cpp-python/releases/download/v0.2.79/llama_cpp_python-0.2.79-cp311-cp311-linux_x86_64.whl" && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements-cloud.txt
 
 # Copy backend files
 COPY backend/ ./backend/
@@ -36,16 +31,11 @@ COPY backend/ ./backend/
 # Copy built frontend assets to the backend's static directory
 COPY --from=frontend-builder /frontend/dist ./backend/static
 
-# Create models directory and download Qwen GGUF model (1.1GB Q5_K_M quantization)
-RUN mkdir -p backend/models && \
-    curl -L -o backend/models/qwen.gguf "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q5_k_m.gguf"
-
 # Expose the port Hugging Face expects
 EXPOSE 7860
 
 # Set environment variables
 ENV PORT=7860
-ENV LLM_MODEL_PATH=models/qwen.gguf
 
 # Set workdir to backend folder so uvicorn runs in correct context
 WORKDIR /app/backend
