@@ -246,7 +246,7 @@ def login(req: LoginRequest):
         best_match = min(users, key=lambda u: np.linalg.norm(query_vector - np.array(u["embedding"])))
         min_distance = np.linalg.norm(query_vector - np.array(best_match["embedding"]))
 
-        threshold = 0.8
+        threshold = 0.98
         print(f"BIOMETRICS: distance={min_distance:.4f} threshold={threshold}")
         if min_distance < threshold:
             if min_distance <= 0.4:

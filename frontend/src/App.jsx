@@ -448,14 +448,18 @@ function App() {
         body: JSON.stringify({ query: logSearchQuery })
       });
       const data = await res.json();
-      if (res.ok && data.filter) {
+      if (res.ok && data.filter && Object.keys(data.filter).length > 0) {
         setActiveLogFilter(data.filter);
         showToast('Logs Filtered', 'AI filtered logs based on search.', 'success');
       } else {
-        showToast('Search Failed', 'Could not parse query.', 'error');
+        const query = logSearchQuery.trim().toLowerCase();
+        setActiveLogFilter({ clientSideQuery: query });
+        showToast('Logs Filtered (Local)', 'Filtered logs locally.', 'info');
       }
     } catch (err) {
-      showToast('Network Error', 'Could not reach search API.', 'error');
+      const query = logSearchQuery.trim().toLowerCase();
+      setActiveLogFilter({ clientSideQuery: query });
+      showToast('Logs Filtered (Local)', 'Filtered logs locally due to network state.', 'info');
     } finally {
       setIsSearchingLogs(false);
     }
@@ -1670,12 +1674,15 @@ function App() {
                         {renderMarkdown(llmAnalysis)}
                       </div>
                     )}
-
                     <div className="max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
                       <div className="timeline-container">
                         {logs
                           .filter(log => {
                             if (!activeLogFilter) return true;
+                            if (activeLogFilter.clientSideQuery) {
+                              const q = activeLogFilter.clientSideQuery;
+                              return log.name.toLowerCase().includes(q) || log.event.toLowerCase().includes(q);
+                            }
                             let match = true;
                             const isValidFilterVal = (val) => {
                               if (val === undefined || val === null) return false;
@@ -1690,7 +1697,7 @@ function App() {
                               match = false;
                             }
                             if (activeLogFilter.success !== undefined && activeLogFilter.success !== null) {
-                              const logSuccess = log.event.includes('Verified') || log.event.includes('Success');
+                              const logSuccess = log.event.includes('Verified') || log.event.includes('Success') || log.event.includes('Unlocked') || log.event.includes('Stored') || log.event.includes('Enrolled');
                               if (logSuccess !== activeLogFilter.success) {
                                 match = false;
                               }
