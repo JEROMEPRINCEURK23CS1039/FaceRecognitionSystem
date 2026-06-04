@@ -8,6 +8,7 @@ import os
 import base64
 import numpy as np
 import cv2
+import threading
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -19,7 +20,7 @@ from keystore import generate_challenge, validate_challenge, encrypt_secret, dec
 from llm_service import (
     analyze_security_logs, chat_with_assistant, audit_password_strength,
     generate_mnemonic_password, parse_log_search_query,
-    get_llm_status, unload_llm, preload_llm
+    get_llm_status, unload_llm, preload_llm, generate_system_security_score
 )
 
 # ---------------------------------------------------------------------------
@@ -57,6 +58,8 @@ face_mesh = mp_face_mesh.FaceMesh(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 )
+face_mesh_lock = threading.Lock()
+
 
 # Core 42 stable landmark indices representing face structure
 STABLE_LANDMARKS = [
@@ -201,8 +204,11 @@ def _format_logs(logs_data: list) -> str:
 def register(req: RegisterRequest):
     try:
         img = decode_base64_image(req.image)
+        if img is None or img.size == 0:
+            raise HTTPException(status_code=400, detail="Invalid or empty camera frame. Please try again.")
         enhanced, status = enhance_low_light(img)
-        results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
+        with face_mesh_lock:
+            results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
         if not results.multi_face_landmarks:
             raise HTTPException(status_code=400, detail="No face detected in the image.")
         landmarks = results.multi_face_landmarks[0].landmark
@@ -221,8 +227,11 @@ def register(req: RegisterRequest):
 def login(req: LoginRequest):
     try:
         img = decode_base64_image(req.image)
+        if img is None or img.size == 0:
+            raise HTTPException(status_code=400, detail="Invalid or empty camera frame. Please try again.")
         enhanced, status = enhance_low_light(img)
-        results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
+        with face_mesh_lock:
+            results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
         if not results.multi_face_landmarks:
             raise HTTPException(status_code=400, detail="No face detected in the frame.")
         landmarks = results.multi_face_landmarks[0].landmark
@@ -260,8 +269,11 @@ def login(req: LoginRequest):
 def analyze_biometrics(req: LoginRequest):
     try:
         img = decode_base64_image(req.image)
+        if img is None or img.size == 0:
+            return {"status": "fail", "message": "Invalid or empty image frame", "ear": 0.0, "alignment": "No Face"}
         enhanced, status = enhance_low_light(img)
-        results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
+        with face_mesh_lock:
+            results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
         if not results.multi_face_landmarks:
             return {"status": "fail", "message": "No face detected", "ear": 0.0, "alignment": "No Face"}
         landmarks = results.multi_face_landmarks[0].landmark
@@ -307,6 +319,19 @@ def search_logs(req: LogSearchRequest):
 @app.get("/api/security-score")
 def security_score():
     logs_data = get_logs(limit=30)
+    stats_data = get_stats()
+    
+    # Try dynamic AI-generated score first
+    try:
+        formatted_logs = _format_logs(logs_data) if logs_data else "No logs recorded."
+        stats_summary = f"Total registered users: {stats_data.get('registered', 0)}\nTotal logins: {stats_data.get('logins', 0)}\nRecent log entries:\n{formatted_logs}"
+        ai_score_result = generate_system_security_score(stats_summary)
+        # Ensure it has the correct keys and valid types
+        if isinstance(ai_score_result, dict) and "score" in ai_score_result and "recommendations" in ai_score_result:
+            return ai_score_result
+    except Exception as e:
+        print(f"AI Security Score failed, falling back to rule-based: {e}")
+
     if not logs_data:
         return {
             "score": 100,

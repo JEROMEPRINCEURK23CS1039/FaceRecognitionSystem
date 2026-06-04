@@ -32,8 +32,131 @@ const getPasswordStrength = (pass) => {
   return ratings[score];
 };
 
+const parseInlineMarkdown = (text) => {
+  if (!text) return "";
+  const parts = [];
+  let remaining = text;
+  const regex = /(\*\*.*?\*\*|`.*?`)/;
+  
+  while (remaining) {
+    const match = remaining.match(regex);
+    if (!match) {
+      parts.push(remaining);
+      break;
+    }
+    
+    const index = match.index;
+    if (index > 0) {
+      parts.push(remaining.substring(0, index));
+    }
+    
+    const token = match[0];
+    if (token.startsWith('**') && token.endsWith('**')) {
+      parts.push(<strong key={remaining + index} className="font-extrabold text-white text-shadow-[0_0_10px_rgba(6,182,212,0.3)]">{token.slice(2, -2)}</strong>);
+    } else if (token.startsWith('`') && token.endsWith('`')) {
+      parts.push(<code key={remaining + index} className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px] text-cyan-300">{token.slice(1, -1)}</code>);
+    }
+    
+    remaining = remaining.substring(index + token.length);
+  }
+  return parts;
+};
+
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  const elements = [];
+  let inCodeBlock = false;
+  let codeBlockLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith('```')) {
+      if (inCodeBlock) {
+        // End of code block
+        elements.push(
+          <pre key={`code-${i}`} className="p-3 my-2 rounded bg-slate-950/80 border border-white/10 font-mono text-[10px] text-cyan-300 overflow-x-auto select-all leading-normal">
+            <code>{codeBlockLines.join('\n')}</code>
+          </pre>
+        );
+        codeBlockLines = [];
+        inCodeBlock = false;
+      } else {
+        // Start of code block
+        inCodeBlock = true;
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeBlockLines.push(line);
+      continue;
+    }
+
+    if (!trimmed) {
+      elements.push(<div key={`space-${i}`} className="h-1.5" />);
+      continue;
+    }
+
+    // Headers
+    if (trimmed.startsWith('###')) {
+      elements.push(<h4 key={i} className="text-xs font-bold text-cyan-400 mt-2.5 mb-1 uppercase tracking-wide font-display">{parseInlineMarkdown(trimmed.replace(/^###\s*/, ''))}</h4>);
+      continue;
+    }
+    if (trimmed.startsWith('##')) {
+      elements.push(<h3 key={i} className="text-xs font-bold text-cyan-400 mt-3 mb-1.5 uppercase tracking-wide border-b border-white/5 pb-1 font-display">{parseInlineMarkdown(trimmed.replace(/^##\s*/, ''))}</h3>);
+      continue;
+    }
+    if (trimmed.startsWith('#')) {
+      elements.push(<h2 key={i} className="text-sm font-bold text-cyan-400 mt-4 mb-2 uppercase tracking-widest font-display">{parseInlineMarkdown(trimmed.replace(/^#\s*/, ''))}</h2>);
+      continue;
+    }
+
+    // Check for bullet list item
+    if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
+      const content = trimmed.replace(/^[\*\-]\s*/, '');
+      elements.push(
+        <ul key={i} className="list-disc pl-4 text-xs text-slate-300 space-y-0.5 mt-0.5">
+          <li className="leading-relaxed">{parseInlineMarkdown(content)}</li>
+        </ul>
+      );
+      continue;
+    }
+
+    // Check for numeric list item
+    if (/^\d+\./.test(trimmed)) {
+      const content = trimmed.replace(/^\d+\.\s*/, '');
+      const num = trimmed.match(/^\d+/)[0];
+      elements.push(
+        <div key={i} className="flex gap-2 text-xs text-slate-300 leading-relaxed mt-1 pl-1">
+          <span className="font-bold text-cyan-400 font-display">{num}.</span>
+          <span className="flex-1">{parseInlineMarkdown(content)}</span>
+        </div>
+      );
+      continue;
+    }
+
+    // Regular paragraph
+    elements.push(<p key={i} className="text-xs text-slate-300 leading-relaxed mt-0.5">{parseInlineMarkdown(trimmed)}</p>);
+  }
+
+  // Handle unclosed code block
+  if (inCodeBlock && codeBlockLines.length > 0) {
+    elements.push(
+      <pre key="code-unclosed" className="p-3 my-2 rounded bg-slate-950/80 border border-white/10 font-mono text-[10px] text-cyan-300 overflow-x-auto select-all leading-normal">
+        <code>{codeBlockLines.join('\n')}</code>
+      </pre>
+    );
+  }
+
+  return elements;
+};
+
 
 function App() {
+
   // App States
   const [activeMode, setActiveMode] = useState('login'); // 'login' | 'register'
   const [streamActive, setStreamActive] = useState(false);
@@ -817,19 +940,21 @@ function App() {
             initial={{ opacity: 0, y: -20, x: 20 }}
             animate={{ opacity: 1, y: 0, x: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-6 right-6 z-50 pointer-events-none"
+            className="fixed top-6 right-6 z-50 pointer-events-auto"
           >
-            <div className="glass-panel flex items-center gap-3 px-5 py-4 rounded-2xl border border-white/10 shadow-2xl">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+            <div className="glass-panel flex items-start gap-3 px-5 py-4 rounded-2xl border border-white/10 shadow-2xl w-[320px] sm:w-[420px] max-w-[90vw]">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                 toast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' :
                 toast.type === 'error' ? 'bg-rose-500/20 text-rose-400' : 'bg-cyan-500/20 text-cyan-400'
               }`}>
                 {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> :
                  toast.type === 'error' ? <XCircle className="w-5 h-5" /> : <Info className="w-5 h-5" />}
               </div>
-              <div>
+              <div className="flex-grow min-w-0">
                 <p className="font-bold text-sm text-white">{toast.title}</p>
-                <p className="text-xs text-slate-400">{toast.desc}</p>
+                <p className="text-xs text-slate-400 mt-1 break-words leading-relaxed max-h-36 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                  {toast.desc}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -843,7 +968,7 @@ function App() {
             <NeuralLogo size={32} />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white glow-cyan">AEGIS CORE</h1>
+            <h1 className="text-xl font-bold tracking-tight text-white glow-cyan font-display">AEGIS CORE</h1>
             <p className="text-[10px] text-slate-400 uppercase tracking-widest">Neural Biometric Gateway</p>
           </div>
         </div>
@@ -946,13 +1071,38 @@ function App() {
               {streamActive && <div className="laser-line" />}
 
               {streamActive && (
-                <div className="absolute inset-8 border-2 border-dashed border-cyan-400/40 rounded-xl pointer-events-none flex items-center justify-center">
-                  <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-cyan-400" />
-                  <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-cyan-400" />
-                  <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-cyan-400" />
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-cyan-400" />
+                <div className="absolute inset-8 border border-cyan-500/20 rounded-xl pointer-events-none">
+                  {/* High-tech corners */}
+                  <div className="absolute -top-1.5 -left-1.5 w-6 h-6 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-md" />
+                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-md" />
+                  <div className="absolute -bottom-1.5 -left-1.5 w-6 h-6 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-md" />
+                  <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-md" />
+                  
+                  {/* Cyberpunk details / labels */}
+                  <div className="absolute top-2 left-2 text-[8px] font-mono text-cyan-400 bg-cyan-950/60 px-1 rounded border border-cyan-500/30 tracking-wider">
+                    SYS.REC.ACTIVE
+                  </div>
+                  <div className="absolute top-2 right-2 text-[8px] font-mono text-purple-400 bg-purple-950/60 px-1 rounded border border-purple-500/30 tracking-wider">
+                    FPS: 30 / HD
+                  </div>
+                  <div className="absolute bottom-2 right-2 text-[8px] font-mono text-cyan-400 bg-cyan-950/60 px-1 rounded border border-cyan-500/30 tracking-wider">
+                    LIVENESS: {(liveEar * 100).toFixed(0)}%
+                  </div>
                 </div>
               )}
+
+              {streamActive && !isProcessing && (
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+                  <div className="w-52 h-52 rounded-full border border-cyan-400/10 flex items-center justify-center animate-pulse">
+                    <div className="w-44 h-44 rounded-full border border-dashed border-cyan-400/20 flex items-center justify-center animate-[spin_30s_linear_infinite]">
+                      <div className="w-28 h-28 rounded-full border border-cyan-400/30 flex items-center justify-center">
+                        <ScanFace className="w-12 h-12 text-cyan-400/50 animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
 
               {/* Camera Offline Mock screen */}
               {!streamActive && (
@@ -1049,7 +1199,7 @@ function App() {
                 className="glass-panel rounded-3xl p-6 flex flex-col justify-between h-full min-h-[460px]"
               >
                 <div>
-                  <h2 className="text-lg font-bold text-white mb-2 tracking-wide">SECURE ACCESS GATEWAY</h2>
+                  <h2 className="text-lg font-bold text-white mb-2 tracking-wide font-display">SECURE ACCESS GATEWAY</h2>
                   <p className="text-xs text-slate-400 mb-6">Choose biometric operation to start live authorization.</p>
 
                   {/* Mode Selector switches */}
@@ -1065,7 +1215,7 @@ function App() {
                       }`}
                     >
                       <Unlock className="w-6 h-6" />
-                      <span className="text-xs font-bold">Scan / Login</span>
+                      <span className="text-xs font-bold font-display">Scan / Login</span>
                     </motion.button>
                     <motion.button 
                       whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(6, 182, 212, 0.25)' }}
@@ -1078,7 +1228,7 @@ function App() {
                       }`}
                     >
                       <UserPlus className="w-6 h-6" />
-                      <span className="text-xs font-bold">Register User</span>
+                      <span className="text-xs font-bold font-display">Register User</span>
                     </motion.button>
                   </div>
 
@@ -1161,7 +1311,7 @@ function App() {
                           colors={["#06B6D4", "#8B5CF6", "#06B6D4"]}
                           animationSpeed={5}
                           showBorder={false}
-                          className="text-xl font-bold tracking-wide cursor-default"
+                          className="text-xl font-bold tracking-wide cursor-default font-display"
                         >
                           Welcome back, {loggedInUser}!
                         </GradientText>
@@ -1323,8 +1473,8 @@ function App() {
                               />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
-                              <span className="text-xl font-black text-white">{securityScore !== null ? securityScore : 'N/A'}</span>
-                              <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Quality</span>
+                              <span className="text-xl font-black text-white font-display">{securityScore !== null ? securityScore : 'N/A'}</span>
+                              <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest font-display">Quality</span>
                             </div>
                           </>
                         )}
@@ -1401,8 +1551,8 @@ function App() {
                     </form>
                     
                     {llmAnalysis && (
-                      <div className="bg-white/[0.03] border border-cyan-400/20 rounded-xl p-4 text-xs text-slate-300 mb-2 whitespace-pre-wrap leading-relaxed shadow-inner shadow-cyan-500/5">
-                        {llmAnalysis}
+                      <div className="bg-white/[0.03] border border-cyan-400/20 rounded-xl p-4 text-xs text-slate-300 mb-2 leading-relaxed shadow-inner shadow-cyan-500/5 flex flex-col gap-1.5">
+                        {renderMarkdown(llmAnalysis)}
                       </div>
                     )}
 
@@ -1595,9 +1745,11 @@ function App() {
                             )}
 
                             {auditResult && (
-                              <div className="text-[10px] bg-white/[0.02] border border-cyan-500/10 p-2.5 rounded-lg text-slate-400 leading-relaxed whitespace-pre-wrap">
-                                <span className="font-bold text-cyan-400">AI Audit: </span>
-                                {auditResult}
+                              <div className="text-[10px] bg-white/[0.02] border border-cyan-500/10 p-2.5 rounded-lg text-slate-400 leading-relaxed flex flex-col gap-1 shadow-inner shadow-cyan-500/5">
+                                <span className="font-bold text-cyan-400 border-b border-white/5 pb-1 mb-1 block">AI Audit Critique:</span>
+                                <div className="space-y-1 mt-0.5 text-slate-300">
+                                  {renderMarkdown(auditResult)}
+                                </div>
                               </div>
                             )}
 
@@ -1729,8 +1881,8 @@ function App() {
                   <div className="flex items-center gap-2">
                     <BrainCircuit className="w-5 h-5 text-cyan-400 animate-pulse" />
                     <div>
-                      <h4 className="font-bold text-sm text-white">AI Security Assistant</h4>
-                      <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono">
+                      <h4 className="font-bold text-sm text-white font-display">AI Security Assistant</h4>
+                      <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-display">
                         {aiCoreStatus.threads === 0 ? "Google Gemini 2.5" : "Local Qwen 1.5B"}
                       </p>
                     </div>
@@ -1755,7 +1907,7 @@ function App() {
                           ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/20' 
                           : 'bg-white/5 text-slate-300 border border-white/5'
                       }`}>
-                        {msg.content}
+                        {msg.role === 'user' ? msg.content : <div className="space-y-1 flex flex-col gap-1">{renderMarkdown(msg.content)}</div>}
                       </div>
                     </div>
                   ))}

@@ -10,12 +10,18 @@ import json
 import time
 import threading
 
-# Detect if Gemini API key is provided
-USE_GEMINI = os.getenv("GEMINI_API_KEY") is not None
+# Detect if Gemini API key is provided and library is installed
+USE_GEMINI = False
+if os.getenv("GEMINI_API_KEY") is not None:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        USE_GEMINI = True
+    except ImportError:
+        print("GEMINI_API_KEY set but google-generativeai is not installed. Falling back to local Llama.")
+        USE_GEMINI = False
 
 if USE_GEMINI:
-    import google.generativeai as genai
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     Llama = None
 else:
     try:
@@ -34,14 +40,21 @@ PERSISTENT_MODE = True  # Keep model in RAM to prevent cold-start latency
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
-def _strip_json_fences(text: str) -> str:
-    """Remove ```json / ``` markdown fences that LLMs sometimes wrap around JSON."""
+import re
+
+def _extract_json(text: str) -> str:
+    """Extract and validate JSON content from LLM response text."""
     text = text.strip()
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.endswith("```"):
-        text = text[:-3]
-    return text.strip()
+    # Try to find content inside triple backticks
+    json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if json_match:
+        return json_match.group(1).strip()
+    # Find the first '{' and last '}'
+    first_brace = text.find('{')
+    last_brace = text.rfind('}')
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        return text[first_brace:last_brace+1].strip()
+    return text
 
 
 def _call_local(prompt: str, max_tokens: int, temperature: float) -> str:
@@ -63,7 +76,14 @@ def _call_gemini(system: str, user: str, response_json: bool = False) -> str:
             generation_config=generation_config
         )
         response = model.generate_content(user)
-        return response.text.strip()
+        try:
+            if response.candidates and len(response.candidates) > 0 and response.candidates[0].content.parts:
+                return response.text.strip()
+            else:
+                return "Error: Gemini returned an empty or blocked response."
+        except (ValueError, AttributeError) as ve:
+            print(f"Gemini response parsing error: {ve}")
+            return "Error: Gemini response blocked by safety filters."
     except Exception as e:
         print(f"GEMINI API ERROR: {e}")
         if response_json:
@@ -211,7 +231,14 @@ def chat_with_assistant(user_message: str, chat_history: list, logs_data: str) -
                 system_instruction=system
             )
             response = model.generate_content(contents)
-            return response.text.strip()
+            try:
+                if response.candidates and len(response.candidates) > 0 and response.candidates[0].content.parts:
+                    return response.text.strip()
+                else:
+                    return "Error: Gemini returned an empty or blocked response."
+            except (ValueError, AttributeError) as ve:
+                print(f"Gemini chat response parsing error: {ve}")
+                return "Error: Gemini response blocked by safety filters."
         except Exception as e:
             return f"Error communicating with AI Core: {e}"
     else:
@@ -237,7 +264,7 @@ def generate_mnemonic_password(prompt: str) -> dict:
         "You are a secure password generator. Create a strong, easy-to-remember mnemonic passphrase. "
         'Return raw valid JSON with exactly two keys: "password" and "explanation".'
     )
-    text = _strip_json_fences(_qwen(system, f"Purpose: {prompt}", 200, 0.7, response_json=True))
+    text = _extract_json(_qwen(system, f"Purpose: {prompt}", 200, 0.7, response_json=True))
     try:
         return json.loads(text)
     except Exception:
@@ -249,7 +276,7 @@ def generate_system_security_score(stats_summary: str) -> dict:
         "You are an expert AI security auditor. Review the system stats and assess overall security. "
         'Return raw valid JSON with exactly two keys: "score" (int 0-100) and "recommendations" (list of 3 strings).'
     )
-    text = _strip_json_fences(_qwen(system, f"System Stats Summary:\n{stats_summary}", 250, 0.2, response_json=True))
+    text = _extract_json(_qwen(system, f"System Stats Summary:\n{stats_summary}", 250, 0.2, response_json=True))
     try:
         return json.loads(text)
     except Exception:
@@ -275,7 +302,7 @@ def parse_log_search_query(user_query: str) -> dict:
         "2. Do NOT output keys with empty or null values. Only output keys that are explicitly requested.\n"
         "3. Output ONLY raw JSON."
     )
-    text = _strip_json_fences(_qwen(system, f'Search Query: "{user_query}"', 150, 0.0, response_json=True))
+    text = _extract_json(_qwen(system, f'Search Query: "{user_query}"', 150, 0.0, response_json=True))
     try:
         parsed = json.loads(text)
         filtered = {k: v for k, v in parsed.items() if v is not None and v != "" and v != []}
