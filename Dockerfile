@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     build-essential \
     python3-dev \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies for cloud mode (uses requirements-cloud.txt)
@@ -29,6 +30,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy backend files
 COPY backend/ ./backend/
+
+# Download the Qwen GGUF model directly into the image to prevent runtime write permission errors and slow wake-ups
+RUN mkdir -p backend/models && \
+    wget -q --show-progress https://huggingface.co/Qwen/Qwen2-1.5B-Instruct-GGUF/resolve/main/qwen2-1_5b-instruct-q4_k_m.gguf -O backend/models/qwen.gguf
 
 # Copy built frontend assets to the backend's static directory
 COPY --from=frontend-builder /frontend/dist ./backend/static
