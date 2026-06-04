@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Info, CheckCircle, XCircle, Unlock, UserPlus,
   ScanFace, Sun, Eye, EyeOff, LogOut,
-  KeyRound, Plus, Copy, Trash2, Lock, Timer, BrainCircuit
+  KeyRound, Plus, Copy, Trash2, Lock, Timer, BrainCircuit,
+  Activity, Shield, AlertTriangle, Zap, Clock
 } from 'lucide-react';
 import Aurora from './Aurora';
 import GradientText from './GradientText';
@@ -214,6 +215,7 @@ function App() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
+  const isProcessingRef = useRef(false); // Synchronous guard for race condition fix
 
   // Vault Key-Store State
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
@@ -593,11 +595,12 @@ function App() {
       streamRef.current = null;
     }
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      clearTimeout(intervalRef.current);
       intervalRef.current = null;
     }
     setStreamActive(false);
     setIsProcessing(false);
+    isProcessingRef.current = false;
   };
 
   // Frame Capture and Vector Processing
@@ -606,7 +609,7 @@ function App() {
   const captureCtx = useRef(null);
 
   const startFrameCapture = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (intervalRef.current) clearTimeout(intervalRef.current);
 
     // Create offscreen canvas once
     if (!captureCanvas.current) {
@@ -622,8 +625,9 @@ function App() {
     let lastFrame = null;
     let localBlinkSuccess = false;
 
-    intervalRef.current = setInterval(async () => {
-      if (!videoRef.current || isProcessing) return;
+    const processFrame = async () => {
+      // Use synchronous ref guard instead of stale closure state
+      if (!videoRef.current || isProcessingRef.current) return;
 
       frameCount++;
       captureCtx.current.drawImage(videoRef.current, 0, 0, 640, 480);
@@ -672,9 +676,13 @@ function App() {
       }
 
       if (frameCount >= 8) {
+        // CRITICAL: Set synchronous ref guard IMMEDIATELY to prevent race condition
+        // This stops any other in-flight callbacks from entering this block
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+
         setIsProcessing(true);
         setVerificationStatus('scanning');
-        clearInterval(intervalRef.current);
         const finalFrame = bestFrame || lastFrame;
         const passedLiveness = localBlinkSuccess || blinkSuccess;
         if (activeMode === 'register') {
@@ -682,8 +690,14 @@ function App() {
         } else {
           await handleBiometricAuthentication(finalFrame, passedLiveness);
         }
+      } else {
+        // Schedule the next frame capture ONLY after the current one has finished processing
+        intervalRef.current = setTimeout(processFrame, 350);
       }
-    }, 350);
+    };
+
+    // Schedule the first frame
+    intervalRef.current = setTimeout(processFrame, 350);
   };
 
   const handleBiometricRegistration = async (base64Image, passedLiveness) => {
@@ -1016,28 +1030,34 @@ function App() {
 
               {/* Processing Cloud Embeddings Overlay */}
               {isProcessing && (
-                <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 z-20">
-                  {/* Face ID Icon Container with Apple style morphing checkmark and shake animation */}
+                <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 z-20">
+                  {/* Face ID Icon Container with concentric rings and morphing states */}
                   <motion.div
                     animate={
                       verificationStatus === 'failed' ? { x: [-10, 10, -10, 10, -5, 5, 0] } : {}
                     }
                     transition={{ duration: 0.5 }}
-                    className="mb-6 relative w-20 h-20 flex items-center justify-center"
+                    className="mb-6 relative w-24 h-24 flex items-center justify-center"
                   >
                     {verificationStatus === 'scanning' && (
                       <>
-                        <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping" />
-                        <div className="absolute inset-2 rounded-full border border-cyan-400/10 animate-pulse" />
-                        <ScanFace className="w-16 h-16 text-cyan-400 animate-pulse" />
+                        <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping" />
+                        <div className="absolute inset-1 rounded-full border border-cyan-400/15 animate-ping" style={{ animationDelay: '0.3s' }} />
+                        <div className="absolute inset-3 rounded-full border border-cyan-400/20 animate-pulse" />
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                          className="absolute inset-2 rounded-full border-2 border-transparent border-t-cyan-400/40 border-r-cyan-400/20"
+                        />
+                        <ScanFace className="w-12 h-12 text-cyan-400 animate-pulse" />
                       </>
                     )}
                     {verificationStatus === 'success' && (
                       <motion.div
-                        initial={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                        className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400"
+                        initial={{ scale: 0, opacity: 0, rotate: -180 }}
+                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                        className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
                       >
                         <CheckCircle className="w-10 h-10" />
                       </motion.div>
@@ -1047,22 +1067,31 @@ function App() {
                         initial={{ scale: 0.6, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                        className="w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center text-rose-400"
+                        className="w-20 h-20 rounded-full bg-rose-500/15 border-2 border-rose-400 flex items-center justify-center text-rose-400 shadow-[0_0_30px_rgba(244,63,94,0.3)]"
                       >
                         <XCircle className="w-10 h-10" />
                       </motion.div>
                     )}
                   </motion.div>
 
-                  <h3 className="text-lg font-bold text-white mb-2 tracking-wide uppercase glow-cyan">
+                  <motion.h3 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-lg font-bold text-white mb-2 tracking-wide uppercase glow-cyan font-display"
+                  >
                     {verificationStatus === 'scanning' ? 'Verifying Identity' :
                      verificationStatus === 'success' ? 'Access Granted' : 'Access Denied'}
-                  </h3>
-                  <p className="text-xs text-slate-400 max-w-sm">
+                  </motion.h3>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-xs text-slate-400 max-w-sm"
+                  >
                     {verificationStatus === 'scanning' ? 'Matching topological face mesh vector coordinates...' :
                      verificationStatus === 'success' ? 'Biometric match success. Decrypting vault keys...' :
                      'Face ID mismatch or liveness verification failed.'}
-                  </p>
+                  </motion.p>
                 </div>
               )}
 
@@ -1104,13 +1133,30 @@ function App() {
               )}
 
 
-              {/* Camera Offline Mock screen */}
+              {/* Camera Offline Mock screen with animated elements */}
               {!streamActive && (
-                <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
-                  <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-4 text-cyan-400">
-                    <ScanFace className="w-8 h-8" />
+                <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+                  {/* Radar sweep animation behind icon */}
+                  <div className="relative w-32 h-32 flex items-center justify-center mb-4">
+                    <div className="absolute inset-0 rounded-full border border-cyan-500/10" />
+                    <div className="absolute inset-4 rounded-full border border-cyan-500/8" />
+                    <div className="absolute inset-8 rounded-full border border-cyan-500/6" />
+                    <div className="radar-sweep" />
+                    <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 z-10">
+                      <ScanFace className="w-8 h-8" />
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">SCANNER OFFLINE</h3>
+                  {/* Floating particles */}
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="particle" style={{ 
+                      left: `${15 + Math.random() * 70}%`, 
+                      top: `${15 + Math.random() * 70}%`,
+                      animationDelay: `${i * 0.7}s`,
+                      width: `${2 + Math.random() * 2}px`,
+                      height: `${2 + Math.random() * 2}px`
+                    }} />
+                  ))}
+                  <h3 className="text-lg font-bold text-white mb-1 glitch-text font-display" data-text="SCANNER OFFLINE">SCANNER OFFLINE</h3>
                   <p className="text-xs text-slate-400 max-w-xs">Initiate biometric feed stream to start physiological liveness validation.</p>
                 </div>
               )}
@@ -1332,18 +1378,87 @@ function App() {
                   {(() => {
                     const audit = checkSecurityStatus();
                     return (
-                      <div className={`mb-5 px-4 py-3 rounded-xl border flex items-center gap-2.5 text-xs transition-all ${
-                        audit.status === 'warning'
-                          ? 'bg-rose-500/10 border-rose-500/20 text-rose-300 animate-pulse'
-                          : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-300'
-                      }`}>
+                      <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className={`mb-5 px-4 py-3 rounded-xl border flex items-center gap-2.5 text-xs transition-all ${
+                          audit.status === 'warning'
+                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-300 animate-pulse'
+                            : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-300'
+                        }`}
+                      >
                         <div className={`w-2 h-2 rounded-full shrink-0 ${
                           audit.status === 'warning' ? 'bg-rose-400' : 'bg-emerald-400 animate-pulse'
                         }`} />
                         <span className="flex-grow">{audit.message}</span>
-                      </div>
+                      </motion.div>
                     );
                   })()}
+
+                  {/* Real-Time Threat Pulse Indicator */}
+                  {isLoggedIn && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="mb-5 p-4 rounded-xl border border-white/5 bg-white/[0.01] flex items-center gap-4"
+                    >
+                      <div className={`threat-pulse w-12 h-12 shrink-0 ${
+                        (() => {
+                          const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
+                          return failures.length >= 3 ? 'threat-high' : failures.length >= 1 ? 'threat-medium' : 'threat-low';
+                        })()
+                      }`}>
+                        <div className="threat-ring" style={{ border: `2px solid var(--threat-color)` }} />
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center z-10" style={{ background: 'var(--threat-color)', opacity: 0.15 }}>
+                          <Shield className="w-4 h-4" style={{ color: 'var(--threat-color)' }} />
+                        </div>
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Threat Level</span>
+                          <span className={`text-[10px] font-black uppercase tracking-wider ${
+                            (() => {
+                              const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
+                              return failures.length >= 3 ? 'text-rose-400' : failures.length >= 1 ? 'text-amber-400' : 'text-emerald-400';
+                            })()
+                          }`}>
+                            {(() => {
+                              const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
+                              return failures.length >= 3 ? 'HIGH' : failures.length >= 1 ? 'MEDIUM' : 'LOW';
+                            })()}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: (() => {
+                              const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
+                              return failures.length >= 3 ? '100%' : failures.length >= 1 ? '50%' : '15%';
+                            })() }}
+                            transition={{ duration: 1.5, ease: 'easeOut' }}
+                            className={`h-full rounded-full ${
+                              (() => {
+                                const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
+                                return failures.length >= 3 ? 'bg-rose-500' : failures.length >= 1 ? 'bg-amber-500' : 'bg-emerald-500';
+                              })()
+                            }`}
+                          />
+                        </div>
+                        <p className="text-[9px] text-slate-500 mt-1">
+                          {(() => {
+                            const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
+                            return failures.length >= 3 
+                              ? `${failures.length} unauthorized attempts detected — recommend immediate audit`
+                              : failures.length >= 1 
+                              ? `${failures.length} minor anomaly — monitor ongoing activity`
+                              : 'All systems nominal — zero anomalies detected';
+                          })()}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
 
                   {/* AI Engine & RAM Optimizer Card */}
                   {isLoggedIn && (
@@ -1556,56 +1671,72 @@ function App() {
                       </div>
                     )}
 
-                    <div className="max-h-64 overflow-y-auto pr-1 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead className="sticky top-0 bg-[#0c101d] z-10 border-b border-white/10">
-                          <tr className="text-slate-400">
-                            <th className="py-2 font-semibold">Timestamp</th>
-                            <th className="py-2 font-semibold">Event</th>
-                            <th className="py-2 font-semibold text-right">Confidence</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-slate-300">
-                          {logs
-                            .filter(log => {
-                              if (!activeLogFilter) return true;
-                              let match = true;
-                              const isValidFilterVal = (val) => {
-                                if (val === undefined || val === null) return false;
-                                const s = String(val).trim().toLowerCase();
-                                return s !== '' && s !== '*' && s !== 'all' && s !== 'none' && s !== 'null' && s !== 'undefined';
-                              };
+                    <div className="max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                      <div className="timeline-container">
+                        {logs
+                          .filter(log => {
+                            if (!activeLogFilter) return true;
+                            let match = true;
+                            const isValidFilterVal = (val) => {
+                              if (val === undefined || val === null) return false;
+                              const s = String(val).trim().toLowerCase();
+                              return s !== '' && s !== '*' && s !== 'all' && s !== 'none' && s !== 'null' && s !== 'undefined';
+                            };
 
-                              if (isValidFilterVal(activeLogFilter.name) && !log.name.toLowerCase().includes(activeLogFilter.name.toLowerCase())) {
+                            if (isValidFilterVal(activeLogFilter.name) && !log.name.toLowerCase().includes(activeLogFilter.name.toLowerCase())) {
+                              match = false;
+                            }
+                            if (isValidFilterVal(activeLogFilter.event) && !log.event.toLowerCase().includes(activeLogFilter.event.toLowerCase())) {
+                              match = false;
+                            }
+                            if (activeLogFilter.success !== undefined && activeLogFilter.success !== null) {
+                              const logSuccess = log.event.includes('Verified') || log.event.includes('Success');
+                              if (logSuccess !== activeLogFilter.success) {
                                 match = false;
                               }
-                              if (isValidFilterVal(activeLogFilter.event) && !log.event.toLowerCase().includes(activeLogFilter.event.toLowerCase())) {
-                                match = false;
-                              }
-                              if (activeLogFilter.success !== undefined && activeLogFilter.success !== null) {
-                                const logSuccess = log.event.includes('Verified') || log.event.includes('Success');
-                                if (logSuccess !== activeLogFilter.success) {
-                                  match = false;
-                                }
-                              }
-                              return match;
-                            })
-                            .map((log, idx) => (
-                              <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-all duration-300">
-                              <td className="py-3 font-mono text-[10px] text-slate-400">{log.timestamp}</td>
-                              <td className="py-3">
-                                <div className="flex flex-col">
-                                  <span className="font-bold text-white">{log.name}</span>
-                                  <span className="text-[10px] text-slate-400">{log.event}</span>
+                            }
+                            return match;
+                          })
+                          .map((log, idx) => {
+                            const isSuccess = log.event.includes('Verified') || log.event.includes('Success') || log.event.includes('Unlocked') || log.event.includes('Stored') || log.event.includes('Enrolled');
+                            const isFailure = log.event.includes('Denied') || log.event.includes('Rejected') || log.event.includes('Deleted');
+                            const eventClass = isSuccess ? 'event-success' : isFailure ? 'event-failure' : 'event-info';
+                            return (
+                              <motion.div 
+                                key={idx} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.03 }}
+                                className={`timeline-node ${eventClass} group`}
+                              >
+                                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-all cursor-default">
+                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                                    isSuccess ? 'bg-emerald-500/10 text-emerald-400' :
+                                    isFailure ? 'bg-rose-500/10 text-rose-400' :
+                                    'bg-cyan-500/10 text-cyan-400'
+                                  }`}>
+                                    {isSuccess ? <CheckCircle className="w-3.5 h-3.5" /> :
+                                     isFailure ? <AlertTriangle className="w-3.5 h-3.5" /> :
+                                     <Activity className="w-3.5 h-3.5" />}
+                                  </div>
+                                  <div className="flex-grow min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-xs font-bold text-white truncate">{log.name}</span>
+                                      <span className={`text-[10px] font-bold shrink-0 ${log.liveness ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        {log.confidence}%
+                                      </span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">{log.event}</p>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                      <Clock className="w-2.5 h-2.5 text-slate-500" />
+                                      <span className="font-mono text-[9px] text-slate-500">{log.timestamp}</span>
+                                    </div>
+                                  </div>
                                 </div>
-                              </td>
-                              <td className={`py-3 text-right font-bold ${log.liveness ? 'text-emerald-400 glow-emerald' : 'text-rose-400'}`}>
-                                {log.confidence}%
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              </motion.div>
+                            );
+                          })}
+                      </div>
                     </div>
                   </div>
 
@@ -1874,7 +2005,7 @@ function App() {
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 50, scale: 0.9 }}
-                className="glass-panel w-80 sm:w-96 h-[450px] rounded-2xl border border-white/10 shadow-2xl flex flex-col mb-4 overflow-hidden"
+                className="chat-panel w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col mb-4 overflow-hidden"
               >
                 {/* Chat Header */}
                 <div className="p-4 bg-gradient-to-r from-cyan-950/40 to-purple-950/40 border-b border-white/10 flex items-center justify-between">
@@ -1904,8 +2035,8 @@ function App() {
                     >
                       <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 leading-relaxed ${
                         msg.role === 'user' 
-                          ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/20' 
-                          : 'bg-white/5 text-slate-300 border border-white/5'
+                          ? 'bg-cyan-900/50 text-white border border-cyan-500/30 shadow-md' 
+                          : 'bg-slate-900/90 text-slate-200 border border-white/10 shadow-md'
                       }`}>
                         {msg.role === 'user' ? msg.content : <div className="space-y-1 flex flex-col gap-1">{renderMarkdown(msg.content)}</div>}
                       </div>
@@ -1913,7 +2044,7 @@ function App() {
                   ))}
                   {isSendingChat && (
                     <div className="flex justify-start">
-                      <div className="bg-white/5 border border-white/5 text-slate-400 rounded-xl px-3.5 py-2.5 flex items-center gap-2">
+                      <div className="bg-slate-900/90 border border-white/10 text-cyan-400 rounded-xl px-3.5 py-2.5 flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0ms' }} />
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '150ms' }} />
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }} />

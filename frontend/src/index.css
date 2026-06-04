@@ -17,7 +17,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphic Panel styling rules */
+/* ========== Glassmorphic Panel ========== */
 .glass-panel {
   position: relative;
   overflow: hidden;
@@ -26,10 +26,9 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(6, 182, 212, 0.05);
-  
   --mouse-x: 50%;
   --mouse-y: 50%;
-  --spotlight-color: rgba(6, 182, 212, 0.15); /* Cyan glow */
+  --spotlight-color: rgba(6, 182, 212, 0.15);
   z-index: 1;
 }
 
@@ -48,63 +47,71 @@ body {
   opacity: 1;
 }
 
-.glass-panel-glow {
-  background: rgba(13, 17, 28, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.15);
+/* ========== Chat Panel — Solid Opaque ========== */
+.chat-panel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(8, 11, 20, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(6, 182, 212, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(6, 182, 212, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  z-index: 1;
 }
 
-/* Cybernetic Mesh Background with shifting colors */
-.mesh-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -10;
-  background: radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
-              radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
-              #070a13;
-  filter: blur(80px);
-  animation: bg-shift 20s ease-in-out infinite alternate;
-}
-
-@keyframes bg-shift {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 100% 100%;
-  }
-}
-
-/* Biometric Scanner Laser Line Animation */
+/* ========== Biometric Scanner Laser Line ========== */
 .laser-line {
   position: absolute;
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, transparent, #06b6d4, transparent);
-  box-shadow: 0 0 15px 4px rgba(6, 182, 212, 0.5);
+  background: linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, #06b6d4, transparent);
+  box-shadow: 0 0 20px 6px rgba(6, 182, 212, 0.5), 0 0 40px 10px rgba(139, 92, 246, 0.2);
   animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   z-index: 10;
 }
 
 @keyframes scan {
-  0% {
-    top: 5%;
-  }
-  50% {
-    top: 95%;
-  }
-  100% {
-    top: 5%;
-  }
+  0% { top: 5%; }
+  50% { top: 95%; }
+  100% { top: 5%; }
 }
 
-/* Neon Glows */
+/* ========== Radar Sweep for Scanner Idle ========== */
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(6, 182, 212, 0.15) 85%, transparent 100%);
+  animation: radar-spin 4s linear infinite;
+}
+
+@keyframes radar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========== Floating Particles ========== */
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(6, 182, 212, 0.4);
+  animation: particle-float 6s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+  25% { transform: translateY(-15px) translateX(8px); opacity: 0.6; }
+  50% { transform: translateY(-25px) translateX(-5px); opacity: 0.3; }
+  75% { transform: translateY(-10px) translateX(12px); opacity: 0.5; }
+}
+
+/* ========== Neon Glows ========== */
 .glow-cyan {
   text-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
 }
@@ -121,8 +128,7 @@ body {
   text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
-
-/* Lateral card shaking on failure */
+/* ========== Lateral Shake ========== */
 .shake-effect {
   animation: shake 0.4s ease-in-out;
 }
@@ -133,7 +139,7 @@ body {
   40%, 80% { transform: translateX(8px); }
 }
 
-/* Scrollbar Customization */
+/* ========== Scrollbar ========== */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -149,7 +155,6 @@ body {
 }
 
 /* ========== Key-Store Vault Styles ========== */
-
 .vault-locked {
   border-color: rgba(255, 255, 255, 0.05);
   transition: border-color 0.5s ease;
@@ -209,4 +214,110 @@ body {
 @keyframes ttl-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* ========== Threat Pulse Indicator ========== */
+.threat-pulse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.threat-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: threat-ring-pulse 2s ease-in-out infinite;
+}
+
+@keyframes threat-ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.3); opacity: 0; }
+}
+
+.threat-low { --threat-color: #10b981; }
+.threat-medium { --threat-color: #f59e0b; }
+.threat-high { --threat-color: #ef4444; }
+
+/* ========== Activity Timeline ========== */
+.timeline-container {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  left: 0.35rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(6, 182, 212, 0.3), rgba(139, 92, 246, 0.1), transparent);
+}
+
+.timeline-node {
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -1.15rem;
+  top: 0.35rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid rgba(6, 182, 212, 0.5);
+  background: #070a13;
+  transition: all 0.3s ease;
+}
+
+.timeline-node:hover::before {
+  background: #06b6d4;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+}
+
+.timeline-node.event-success::before {
+  border-color: #10b981;
+}
+
+.timeline-node.event-failure::before {
+  border-color: #ef4444;
+}
+
+.timeline-node.event-info::before {
+  border-color: #06b6d4;
+}
+
+/* ========== Border Glow Sweep ========== */
+@keyframes border-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ========== Glitch Text Effect ========== */
+.glitch-text {
+  position: relative;
+}
+
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px;
+  top: 0;
+  color: rgba(6, 182, 212, 0.4);
+  clip-path: inset(0 0 0 0);
+  animation: glitch-clip 3s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-clip {
+  0% { clip-path: inset(0 100% 0 0); }
+  10% { clip-path: inset(20% 0 60% 0); }
+  20% { clip-path: inset(0 100% 0 0); }
+  30% { clip-path: inset(40% 0 30% 0); }
+  40% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 100% 0 0); }
 }

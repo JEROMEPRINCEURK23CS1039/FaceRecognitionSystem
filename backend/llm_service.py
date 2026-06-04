@@ -10,6 +10,34 @@ import json
 import time
 import threading
 
+# ---------------------------------------------------------------------------
+# Load environment variables manually from .env if present
+# ---------------------------------------------------------------------------
+def _load_dotenv():
+    # Check current directory and parent directory for .env
+    for path in [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    ]:
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        if "=" in line:
+                            k, v = line.split("=", 1)
+                            # Strip whitespace and potential enclosing quotes
+                            k = k.strip()
+                            v = v.strip().strip("'").strip('"')
+                            if k and v:
+                                os.environ[k] = v
+            except Exception as e:
+                print(f"Error loading .env file from {path}: {e}")
+
+_load_dotenv()
+
 # Detect if Gemini API key is provided and library is installed
 USE_GEMINI = False
 if os.getenv("GEMINI_API_KEY") is not None:
@@ -20,6 +48,7 @@ if os.getenv("GEMINI_API_KEY") is not None:
     except ImportError:
         print("GEMINI_API_KEY set but google-generativeai is not installed. Falling back to local Llama.")
         USE_GEMINI = False
+
 
 if USE_GEMINI:
     Llama = None
