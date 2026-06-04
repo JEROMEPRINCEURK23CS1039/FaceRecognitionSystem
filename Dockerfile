@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install python dependencies
 COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "https://github.com/abetlen/llama-cpp-python/releases/download/v0.2.79/llama_cpp_python-0.2.79-cp311-cp311-linux_x86_64.whl" && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy backend files
