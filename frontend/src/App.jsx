@@ -1681,7 +1681,26 @@ function App() {
                             if (!activeLogFilter) return true;
                             if (activeLogFilter.clientSideQuery) {
                               const q = activeLogFilter.clientSideQuery;
-                              return log.name.toLowerCase().includes(q) || log.event.toLowerCase().includes(q);
+                              const stopWords = ['show', 'me', 'find', 'log', 'logs', 'login', 'logins', 'attempt', 'attempts', 'user', 'users', 'view', 'get', 'display', 'search', 'for', 'the', 'with', 'a', 'an', 'of'];
+                              const words = q.split(/\s+/).filter(w => w.length > 0 && !stopWords.includes(w));
+                              if (words.length === 0) return true;
+                              return words.every(word => {
+                                if (['success', 'verified', 'unlocked', 'stored', 'enrolled', 'granted'].includes(word)) {
+                                  return log.event.toLowerCase().includes('verified') || 
+                                         log.event.toLowerCase().includes('success') || 
+                                         log.event.toLowerCase().includes('unlocked') || 
+                                         log.event.toLowerCase().includes('stored') || 
+                                         log.event.toLowerCase().includes('enrolled') || 
+                                         log.event.toLowerCase().includes('granted');
+                                }
+                                if (['fail', 'failed', 'denied', 'rejected', 'unauthorized'].includes(word)) {
+                                  return log.event.toLowerCase().includes('denied') || 
+                                         log.event.toLowerCase().includes('rejected') || 
+                                         log.event.toLowerCase().includes('failed') || 
+                                         log.event.toLowerCase().includes('failure');
+                                }
+                                return log.name.toLowerCase().includes(word) || log.event.toLowerCase().includes(word);
+                              });
                             }
                             let match = true;
                             const isValidFilterVal = (val) => {
@@ -1690,8 +1709,12 @@ function App() {
                               return s !== '' && s !== '*' && s !== 'all' && s !== 'none' && s !== 'null' && s !== 'undefined';
                             };
 
-                            if (isValidFilterVal(activeLogFilter.name) && !log.name.toLowerCase().includes(activeLogFilter.name.toLowerCase())) {
-                              match = false;
+                            if (isValidFilterVal(activeLogFilter.name)) {
+                              const filterName = activeLogFilter.name.toLowerCase();
+                              const logName = log.name.toLowerCase();
+                              if (!logName.includes(filterName) && !filterName.includes(logName)) {
+                                match = false;
+                              }
                             }
                             if (isValidFilterVal(activeLogFilter.event) && !log.event.toLowerCase().includes(activeLogFilter.event.toLowerCase())) {
                               match = false;

@@ -141,12 +141,14 @@ def enhance_low_light(img):
     return enhanced, status
 
 
-def _landmark_vec(lm, idx):
-    return np.array([lm[idx].x, lm[idx].y, lm[idx].z])
+def _landmark_vec(lm, idx, aspect_ratio: float = 1.0):
+    # Damp the Z-coordinate depth estimation to minimize inter-camera resolution and focal variance
+    # Scale X and Z coordinates by aspect ratio to neutralize frame stretching relative to Y (height)
+    return np.array([lm[idx].x * aspect_ratio, lm[idx].y, lm[idx].z * 0.1 * aspect_ratio])
 
 
-def calculate_ear(landmarks, eye_indices):
-    p = [_landmark_vec(landmarks, i) for i in eye_indices]
+def calculate_ear(landmarks, eye_indices, aspect_ratio: float = 1.0):
+    p = [_landmark_vec(landmarks, i, aspect_ratio) for i in eye_indices]
     vertical = np.linalg.norm(p[1] - p[5]) + np.linalg.norm(p[2] - p[4])
     horizontal = np.linalg.norm(p[0] - p[3])
     return 0.0 if horizontal == 0 else vertical / (2.0 * horizontal)
@@ -175,19 +177,19 @@ def check_face_alignment(landmarks):
     return "Perfect"
 
 
-def extract_biometric_signature(landmarks):
-    nose_tip        = _landmark_vec(landmarks, 1)
-    left_eye_outer  = _landmark_vec(landmarks, 33)
-    right_eye_outer = _landmark_vec(landmarks, 263)
+def extract_biometric_signature(landmarks, aspect_ratio: float = 1.0):
+    nose_tip        = _landmark_vec(landmarks, 1, aspect_ratio)
+    left_eye_outer  = _landmark_vec(landmarks, 33, aspect_ratio)
+    right_eye_outer = _landmark_vec(landmarks, 263, aspect_ratio)
     scale = np.linalg.norm(left_eye_outer - right_eye_outer) or 1.0
 
     coords = []
     for idx in STABLE_LANDMARKS:
-        coords.extend((_landmark_vec(landmarks, idx) - nose_tip) / scale)
+        coords.extend((_landmark_vec(landmarks, idx, aspect_ratio) - nose_tip) / scale)
 
     # 2 EAR values pad to 128 dimensions total
-    coords.append(calculate_ear(landmarks, LEFT_EYE_IDX))
-    coords.append(calculate_ear(landmarks, RIGHT_EYE_IDX))
+    coords.append(calculate_ear(landmarks, LEFT_EYE_IDX, aspect_ratio))
+    coords.append(calculate_ear(landmarks, RIGHT_EYE_IDX, aspect_ratio))
     return coords
 
 
@@ -206,13 +208,15 @@ def register(req: RegisterRequest):
         img = decode_base64_image(req.image)
         if img is None or img.size == 0:
             raise HTTPException(status_code=400, detail="Invalid or empty camera frame. Please try again.")
+        height, width = img.shape[:2]
+        aspect_ratio = width / height
         enhanced, status = enhance_low_light(img)
         with face_mesh_lock:
             results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
         if not results.multi_face_landmarks:
             raise HTTPException(status_code=400, detail="No face detected in the image.")
         landmarks = results.multi_face_landmarks[0].landmark
-        embedding = extract_biometric_signature(landmarks)
+        embedding = extract_biometric_signature(landmarks, aspect_ratio)
         if save_user(req.name, embedding):
             log_session(req.name, "Biometric Enrollment Success", 100.0, req.liveness)
             return {"status": "success", "message": "User registered successfully!", "enhancement": status}
@@ -229,6 +233,8 @@ def login(req: LoginRequest):
         img = decode_base64_image(req.image)
         if img is None or img.size == 0:
             raise HTTPException(status_code=400, detail="Invalid or empty camera frame. Please try again.")
+        height, width = img.shape[:2]
+        aspect_ratio = width / height
         enhanced, status = enhance_low_light(img)
         with face_mesh_lock:
             results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
@@ -236,8 +242,8 @@ def login(req: LoginRequest):
             raise HTTPException(status_code=400, detail="No face detected in the frame.")
         landmarks = results.multi_face_landmarks[0].landmark
 
-        query_vector = np.array(extract_biometric_signature(landmarks))
-        avg_ear = float((calculate_ear(landmarks, LEFT_EYE_IDX) + calculate_ear(landmarks, RIGHT_EYE_IDX)) / 2.0)
+        query_vector = np.array(extract_biometric_signature(landmarks, aspect_ratio))
+        avg_ear = float((calculate_ear(landmarks, LEFT_EYE_IDX, aspect_ratio) + calculate_ear(landmarks, RIGHT_EYE_IDX, aspect_ratio)) / 2.0)
 
         users = get_all_users()
         if not users:
@@ -271,13 +277,15 @@ def analyze_biometrics(req: LoginRequest):
         img = decode_base64_image(req.image)
         if img is None or img.size == 0:
             return {"status": "fail", "message": "Invalid or empty image frame", "ear": 0.0, "alignment": "No Face"}
+        height, width = img.shape[:2]
+        aspect_ratio = width / height
         enhanced, status = enhance_low_light(img)
         with face_mesh_lock:
             results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
         if not results.multi_face_landmarks:
             return {"status": "fail", "message": "No face detected", "ear": 0.0, "alignment": "No Face"}
         landmarks = results.multi_face_landmarks[0].landmark
-        avg_ear = float((calculate_ear(landmarks, LEFT_EYE_IDX) + calculate_ear(landmarks, RIGHT_EYE_IDX)) / 2.0)
+        avg_ear = float((calculate_ear(landmarks, LEFT_EYE_IDX, aspect_ratio) + calculate_ear(landmarks, RIGHT_EYE_IDX, aspect_ratio)) / 2.0)
         return {"status": "success", "ear": round(avg_ear, 3), "alignment": check_face_alignment(landmarks), "enhancement": status}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
