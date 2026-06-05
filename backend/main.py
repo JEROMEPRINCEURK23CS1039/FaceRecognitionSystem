@@ -285,7 +285,7 @@ def login(req: LoginRequest):
         best_match = min(users, key=lambda u: np.linalg.norm(query_vector - np.array(u["embedding"])))
         min_distance = np.linalg.norm(query_vector - np.array(best_match["embedding"]))
 
-        threshold = 0.98
+        threshold = 0.45
         print(f"BIOMETRICS: distance={min_distance:.4f} threshold={threshold}")
         if min_distance < threshold:
             if min_distance <= 0.4:
@@ -322,7 +322,8 @@ def analyze_biometrics(req: LoginRequest):
             return {"status": "fail", "message": "No face detected", "ear": 0.0, "alignment": "No Face"}
         landmarks = results.multi_face_landmarks[0].landmark
         avg_ear = float((calculate_ear(landmarks, LEFT_EYE_IDX, aspect_ratio) + calculate_ear(landmarks, RIGHT_EYE_IDX, aspect_ratio)) / 2.0)
-        return {"status": "success", "ear": round(avg_ear, 3), "alignment": check_face_alignment(landmarks), "enhancement": status}
+        landmarks_data = [{"x": round(l.x, 3), "y": round(l.y, 3)} for l in landmarks]
+        return {"status": "success", "ear": round(avg_ear, 3), "alignment": check_face_alignment(landmarks), "enhancement": status, "landmarks": landmarks_data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

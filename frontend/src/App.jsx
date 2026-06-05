@@ -378,8 +378,9 @@ function App() {
   const [isControllingLLM, setIsControllingLLM] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(null); // 'scanning' | 'success' | 'failed'
 
-  const [cameraFilter, setCameraFilter] = useState('none');
+  const [cameraFilter, setCameraFilter] = useState('vectors');
   const [blinkStrictness, setBlinkStrictness] = useState('standard');
+  const [faceLandmarks, setFaceLandmarks] = useState([]);
 
   // Toast notifications
   const [toast, setToast] = useState({ show: false, title: '', desc: '', type: 'info' });
@@ -826,7 +827,9 @@ function App() {
             if (score > bestScore) { bestScore = score; bestFrame = base64Image; }
 
             const requiredBlinks = blinkStrictness === 'relaxed' ? 1 : blinkStrictness === 'standard' ? 1 : 2;
-            const earThresh = blinkStrictness === 'relaxed' ? 0.22 : blinkStrictness === 'standard' ? 0.18 : 0.15;
+            const earThresh = blinkStrictness === 'relaxed' ? 0.28 : blinkStrictness === 'standard' ? 0.22 : 0.18;
+
+            if (data.landmarks) setFaceLandmarks(data.landmarks);
 
             if (data.ear < earThresh && !isBlinkingRef.current) {
               isBlinkingRef.current = true;
@@ -866,11 +869,11 @@ function App() {
           await handleBiometricAuthentication(finalFrame, passedLiveness);
         }
       } else {
-        intervalRef.current = setTimeout(processFrame, 350);
+        intervalRef.current = setTimeout(processFrame, 100);
       }
     };
 
-    intervalRef.current = setTimeout(processFrame, 350);
+    intervalRef.current = setTimeout(processFrame, 100);
   };
 
   const handleBiometricRegistration = async (base64Image, passedLiveness) => {
@@ -1231,14 +1234,23 @@ function App() {
                   </div>
 
                   {/* Camera View box */}
-                  <div className="w-full relative rounded-2xl overflow-hidden bg-black/50 border border-white/5 aspect-video flex items-center justify-center">
+                  <div className="w-full relative rounded-2xl overflow-hidden bg-black/90 border border-white/5 aspect-video flex items-center justify-center">
                     <video 
                       ref={videoRef} 
-                      className={`w-full h-full object-cover scale-x-[-1] transition-all duration-300 ${cameraFilter === 'infrared' ? 'sepia hue-rotate-[160deg] contrast-150 saturate-200' : cameraFilter === 'matrix' ? 'contrast-150 grayscale sepia hue-rotate-90' : ''}`} 
+                      className={`w-full h-full object-cover scale-x-[-1] transition-all duration-300 ${cameraFilter === 'infrared' ? 'sepia hue-rotate-[160deg] contrast-150 saturate-200' : cameraFilter === 'matrix' ? 'contrast-150 grayscale sepia hue-rotate-90' : ''} ${cameraFilter === 'vectors' ? 'opacity-0 absolute' : ''}`} 
                       autoPlay 
                       playsInline 
                       muted 
                     />
+                    
+                    {/* Glowing Mesh Overlay */}
+                    {cameraFilter === 'vectors' && faceLandmarks.length > 0 && (
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] scale-x-[-1] z-10" viewBox="0 0 1 1" preserveAspectRatio="none">
+                        {faceLandmarks.map((pt, i) => (
+                          <circle key={i} cx={pt.x} cy={pt.y} r="0.003" fill="#22d3ee" className="transition-all duration-100" />
+                        ))}
+                      </svg>
+                    )}
                     
                     {isProcessing && (
                       <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
@@ -1513,6 +1525,7 @@ function App() {
                           <button onClick={() => setCameraFilter('none')} className={`w-full text-left font-bold ${cameraFilter==='none' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Standard Optics</button>
                           <button onClick={() => setCameraFilter('infrared')} className={`w-full text-left font-bold ${cameraFilter==='infrared' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Infrared Sim</button>
                           <button onClick={() => setCameraFilter('matrix')} className={`w-full text-left font-bold ${cameraFilter==='matrix' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Matrix Vision</button>
+                          <button onClick={() => setCameraFilter('vectors')} className={`w-full text-left font-bold ${cameraFilter==='vectors' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Cyber-Mesh (Vectors)</button>
                         </div>
                         <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5">
                           <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">LIVENESS STRICTNESS</p>
@@ -1851,7 +1864,7 @@ function App() {
                   <div className="flex justify-between items-center text-[10px]">
                     <span>Eye Aspect Ratio (EAR) Blink Threshold:</span>
                     <span className="font-bold text-cyan-400 font-mono">
-                      {blinkStrictness === 'relaxed' ? '< 0.22 (Light)' : blinkStrictness === 'standard' ? '< 0.18 (Full)' : '< 0.15 (Deep)'}
+                      {blinkStrictness === 'relaxed' ? '< 0.28 (Light)' : blinkStrictness === 'standard' ? '< 0.22 (Full)' : '< 0.18 (Deep)'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
