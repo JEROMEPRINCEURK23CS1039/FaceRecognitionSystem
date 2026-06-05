@@ -77,7 +77,7 @@ def _extract_json(text: str) -> str:
 def _call_local(prompt: str, max_tokens: int, temperature: float) -> str:
     """Run inference locally on the GGUF model and return raw text."""
     llm = get_llm()
-    output = llm(prompt, max_tokens=max_tokens, temperature=temperature, stop=["<|im_end|>"])
+    output = llm(prompt, max_tokens=max_tokens, temperature=temperature, stop=["<|im_end|>", "<|endoftext|>"])
     return output["choices"][0]["text"].strip()
 
 
@@ -123,16 +123,15 @@ def get_llm() -> Llama:
                         f"Model not found at '{MODEL_PATH}' and auto-download failed: {download_err}. "
                         "Please download the GGUF model and place it in backend/models/."
                     )
-            # Maximize resource utilization per user request
+            # Maximize resource utilization, but cap threads to avoid severe contention in containerized environments
             cores = os.cpu_count() or 4
-            # Use all available CPU cores without artificial limits
-            max_threads = cores
+            max_threads = min(cores, 8)
 
             _llm = Llama(
                 model_path=MODEL_PATH,
-                n_ctx=8192,          # Maximize context window
+                n_ctx=2048,          # Safe context window for 16GB RAM limits
                 n_threads=max_threads,
-                n_gpu_layers=99,     # Offload all layers to GPU if available
+                n_gpu_layers=99,     # Offload to GPU if available
                 verbose=False,
             )
     return _llm
