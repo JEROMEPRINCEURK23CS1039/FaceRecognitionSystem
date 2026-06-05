@@ -7,6 +7,7 @@ import {
   Activity, Shield, AlertTriangle, Zap, Clock, Bell, User, LayoutGrid, Database, Cog, FileText
 } from 'lucide-react';
 import Aurora from './Aurora';
+import DotField from './DotField';
 import GradientText from './GradientText';
 import NeuralLogo from './NeuralLogo';
 
@@ -998,13 +999,20 @@ function App() {
 
   return (
     <div className="min-h-screen flex bg-[#070a13] text-slate-100 relative overflow-hidden font-sans selection:bg-cyan-500/30 w-full">
-      {/* Cybernetic Aurora Background */}
-      <Aurora
-        colorStops={["#06B6D4", "#8B5CF6", "#06B6D4"]}
-        blend={0.5}
-        amplitude={1.0}
-        speed={0.8}
-      />
+      {/* Interactive DotField Background */}
+      <div className="absolute inset-0 z-0">
+        <DotField
+          dotRadius={1.5}
+          dotSpacing={14}
+          bulgeStrength={67}
+          glowRadius={160}
+          sparkle={true}
+          waveAmplitude={0}
+          gradientFrom="rgba(6, 182, 212, 0.6)"
+          gradientTo="rgba(139, 92, 246, 0.4)"
+          glowColor="rgba(6, 182, 212, 0.25)"
+        />
+      </div>
       
       {/* Global Toast System */}
       <AnimatePresence>
