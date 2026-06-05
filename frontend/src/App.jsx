@@ -162,26 +162,54 @@ function WaveChart() {
           <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.0" />
         </linearGradient>
       </defs>
-      <path
-        d="M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50"
+      <motion.path
+        animate={{
+          d: [
+            "M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50",
+            "M 0,50 Q 25,45 50,55 T 100,65 T 150,45 T 200,55",
+            "M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50"
+          ]
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         fill="none"
         stroke="#8b5cf6"
         strokeWidth="1.2"
         className="opacity-70"
       />
-      <path
-        d="M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50 L 200,80 L 0,80 Z"
+      <motion.path
+        animate={{
+          d: [
+            "M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50 L 200,80 L 0,80 Z",
+            "M 0,50 Q 25,45 50,55 T 100,65 T 150,45 T 200,55 L 200,80 L 0,80 Z",
+            "M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50 L 200,80 L 0,80 Z"
+          ]
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         fill="url(#purple-grad)"
         className="opacity-10"
       />
-      <path
-        d="M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45"
+      <motion.path
+        animate={{
+          d: [
+            "M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45",
+            "M 0,35 Q 25,55 50,40 T 100,25 T 150,55 T 200,35",
+            "M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45"
+          ]
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         fill="none"
         stroke="#06b6d4"
         strokeWidth="2"
       />
-      <path
-        d="M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45 L 200,80 L 0,80 Z"
+      <motion.path
+        animate={{
+          d: [
+            "M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45 L 200,80 L 0,80 Z",
+            "M 0,35 Q 25,55 50,40 T 100,25 T 150,55 T 200,35 L 200,80 L 0,80 Z",
+            "M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45 L 200,80 L 0,80 Z"
+          ]
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         fill="url(#cyan-grad)"
         className="opacity-25"
       />
@@ -1402,23 +1430,23 @@ function App() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left text-[10px]">
                         <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
                           <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">SECURITY PROTOCOLS</p>
-                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Level Management</span></button>
-                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>2FA Sync</span></button>
+                          <button onClick={() => showToast('Security Level', 'Current clearance level: MAXIMUM (Tier 5).', 'info')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Level Management</span></button>
+                          <button onClick={() => showToast('2FA Sync', 'Biometric tokens synced with external authenticator.', 'success')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>2FA Sync</span></button>
                         </div>
                         <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
                           <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">EVENT RESPONSE</p>
                           <button onClick={analyzeLogs} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Threat Detection</span></button>
-                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Manual Override</span></button>
+                          <button onClick={() => showToast('Manual Override', 'System lockout initiated. Administrator access required.', 'error')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Manual Override</span></button>
                         </div>
                         <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
                           <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">BIOMETRIC SETTINGS</p>
-                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Face Templates</span></button>
-                          <button onClick={() => { if(!isLoggedIn) { stopCamera(); setActiveMode('register'); startCamera(); } }} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Enrollment</span></button>
+                          <button onClick={() => showToast('Face Templates', '3 active templates registered. Neural matching active.', 'info')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Face Templates</span></button>
+                          <button onClick={() => { if(!isLoggedIn) { stopCamera(); setActiveMode('register'); startCamera(); } else { showToast('Enrollment', 'Already enrolled.', 'info'); } }} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Enrollment</span></button>
                         </div>
                         <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
                           <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">SYSTEM ALERTS</p>
                           <button onClick={() => setActiveTab('logs')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Recent Activity</span></button>
-                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Notifications</span></button>
+                          <button onClick={() => showToast('Notifications', 'No new system alerts at this time.', 'info')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Notifications</span></button>
                         </div>
                       </div>
                     </div>
