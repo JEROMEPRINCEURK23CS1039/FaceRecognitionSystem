@@ -9,7 +9,6 @@ import {
 import Aurora from './Aurora';
 import GradientText from './GradientText';
 import NeuralLogo from './NeuralLogo';
-import FaceMesh3D from './FaceMesh3D';
 
 // API base
 const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
@@ -1192,12 +1191,7 @@ function App() {
                     )}
                   </div>
 
-                  {/* 3D Hologram face wireframe pedestal */}
-                  <div className="my-3 border border-white/5 bg-slate-950/45 rounded-2xl relative holo-pedestal flex flex-col items-center p-1">
-                    <div className="absolute top-2 left-3 text-[7px] font-mono text-cyan-400/60 uppercase tracking-widest font-bold">3D_FACE_MESH_SCAN</div>
-                    <FaceMesh3D status={verificationStatus || (streamActive ? 'scanning' : 'idle')} scanning={streamActive} />
-                  </div>
-
+                  
                   {/* Diagnostics status layout */}
                   <div className="grid grid-cols-2 gap-4 bg-white/5 border border-white/5 rounded-xl p-3 text-[10px]">
                     <div className="flex items-center gap-2">
