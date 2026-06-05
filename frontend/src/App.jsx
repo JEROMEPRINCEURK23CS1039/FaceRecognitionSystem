@@ -7,7 +7,6 @@ import {
   Activity, Shield, AlertTriangle, Zap, Clock, Bell, User, LayoutGrid, Database, Cog, FileText
 } from 'lucide-react';
 import Aurora from './Aurora';
-import Aurora from './Aurora';
 import DotField from './DotField';
 import LetterGlitch from './LetterGlitch';
 import GradientText from './GradientText';
