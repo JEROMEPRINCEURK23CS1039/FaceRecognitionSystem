@@ -378,6 +378,9 @@ function App() {
   const [isControllingLLM, setIsControllingLLM] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(null); // 'scanning' | 'success' | 'failed'
 
+  const [cameraFilter, setCameraFilter] = useState('none');
+  const [blinkStrictness, setBlinkStrictness] = useState('standard');
+
   // Toast notifications
   const [toast, setToast] = useState({ show: false, title: '', desc: '', type: 'info' });
 
@@ -822,16 +825,23 @@ function App() {
             const score = data.alignment === 'Perfect' ? 3 : data.alignment === 'Face Tilted' ? 2 : data.alignment === 'Face Turned' ? 1 : 0;
             if (score > bestScore) { bestScore = score; bestFrame = base64Image; }
 
-            if (data.ear < 0.18 && !isBlinkingRef.current) {
+            const requiredBlinks = blinkStrictness === 'relaxed' ? 1 : blinkStrictness === 'standard' ? 1 : 2;
+            const earThresh = blinkStrictness === 'relaxed' ? 0.22 : blinkStrictness === 'standard' ? 0.18 : 0.15;
+
+            if (data.ear < earThresh && !isBlinkingRef.current) {
               isBlinkingRef.current = true;
-            } else if (isBlinkingRef.current && data.ear > 0.22) {
+            } else if (isBlinkingRef.current && data.ear > earThresh + 0.04) {
               isBlinkingRef.current = false;
               setBlinkCount(c => {
                 const next = c + 1;
-                if (next >= 1) { setBlinkSuccess(true); localBlinkSuccess = true; }
+                if (next >= requiredBlinks) { setBlinkSuccess(true); localBlinkSuccess = true; }
+                if (next < requiredBlinks) {
+                  showToast('Liveness', `Blink ${next}/${requiredBlinks} detected. Please blink again.`, 'info');
+                } else {
+                  showToast('Liveness Verified', `Blink gesture (${next}/${requiredBlinks}) successfully captured!`, 'success');
+                }
                 return next;
               });
-              showToast('Liveness Verified', 'Blink gesture successfully captured!', 'success');
             }
           } else {
             setLiveEar(0.0);
@@ -1222,7 +1232,13 @@ function App() {
 
                   {/* Camera View box */}
                   <div className="w-full relative rounded-2xl overflow-hidden bg-black/50 border border-white/5 aspect-video flex items-center justify-center">
-                    <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" autoPlay playsInline muted />
+                    <video 
+                      ref={videoRef} 
+                      className={`w-full h-full object-cover scale-x-[-1] transition-all duration-300 ${cameraFilter === 'infrared' ? 'sepia hue-rotate-[160deg] contrast-150 saturate-200' : cameraFilter === 'matrix' ? 'contrast-150 grayscale sepia hue-rotate-90' : ''}`} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                    />
                     
                     {isProcessing && (
                       <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
@@ -1489,28 +1505,25 @@ function App() {
                     {/* Feature integration grids */}
                     <div className="tech-panel rounded-3xl p-5">
                       <div className="border-b border-white/5 pb-2 mb-4">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">FEATURE INTEGRATION</h3>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">SECURITY TOOLS</h3>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left text-[10px]">
-                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
-                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">SECURITY PROTOCOLS</p>
-                          <button onClick={() => showToast('Security Level', 'Current clearance level: MAXIMUM (Tier 5).', 'info')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Level Management</span></button>
-                          <button onClick={() => showToast('2FA Sync', 'Biometric tokens synced with external authenticator.', 'success')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>2FA Sync</span></button>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left text-[10px]">
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">CAMERA FILTERS</p>
+                          <button onClick={() => setCameraFilter('none')} className={`w-full text-left font-bold ${cameraFilter==='none' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Standard Optics</button>
+                          <button onClick={() => setCameraFilter('infrared')} className={`w-full text-left font-bold ${cameraFilter==='infrared' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Infrared Sim</button>
+                          <button onClick={() => setCameraFilter('matrix')} className={`w-full text-left font-bold ${cameraFilter==='matrix' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Matrix Vision</button>
                         </div>
-                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
-                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">EVENT RESPONSE</p>
-                          <button onClick={analyzeLogs} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Threat Detection</span></button>
-                          <button onClick={() => showToast('Manual Override', 'System lockout initiated. Administrator access required.', 'error')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Manual Override</span></button>
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">LIVENESS STRICTNESS</p>
+                          <button onClick={() => setBlinkStrictness('relaxed')} className={`w-full text-left font-bold ${blinkStrictness==='relaxed' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Relaxed (1 light blink)</button>
+                          <button onClick={() => setBlinkStrictness('standard')} className={`w-full text-left font-bold ${blinkStrictness==='standard' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Standard (1 full blink)</button>
+                          <button onClick={() => setBlinkStrictness('strict')} className={`w-full text-left font-bold ${blinkStrictness==='strict' ? 'text-cyan-400' : 'text-white'} hover:text-cyan-300 transition-colors`}>Paranoid (2 deep blinks)</button>
                         </div>
-                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
-                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">BIOMETRIC SETTINGS</p>
-                          <button onClick={() => showToast('Face Templates', '3 active templates registered. Neural matching active.', 'info')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Face Templates</span></button>
-                          <button onClick={() => { if(!isLoggedIn) { stopCamera(); setActiveMode('register'); startCamera(); } else { showToast('Enrollment', 'Already enrolled.', 'info'); } }} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Enrollment</span></button>
-                        </div>
-                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
-                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">SYSTEM ALERTS</p>
-                          <button onClick={() => setActiveTab('logs')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Recent Activity</span></button>
-                          <button onClick={() => showToast('Notifications', 'No new system alerts at this time.', 'info')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Notifications</span></button>
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">DATA EXPORT</p>
+                          <a href={`${API_BASE}/logs/export`} download="security_logs.csv" className="w-full inline-block text-left font-bold text-white hover:text-cyan-400 transition-colors">Download CSV Logs</a>
+                          <button onClick={() => setActiveTab('logs')} className="w-full text-left font-bold text-white hover:text-cyan-400 transition-colors mt-1.5">View Recent Activity</button>
                         </div>
                       </div>
                     </div>
@@ -1837,11 +1850,15 @@ function App() {
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">BIOMETRIC LIVENESS CONTROLS</h3>
                   <div className="flex justify-between items-center text-[10px]">
                     <span>Eye Aspect Ratio (EAR) Blink Threshold:</span>
-                    <span className="font-bold text-cyan-400 font-mono">0.18 (Closed) / 0.22 (Open)</span>
+                    <span className="font-bold text-cyan-400 font-mono">
+                      {blinkStrictness === 'relaxed' ? '< 0.22 (Light)' : blinkStrictness === 'standard' ? '< 0.18 (Full)' : '< 0.15 (Deep)'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
-                    <span>Temporal Blink Check Duration:</span>
-                    <span className="font-bold text-cyan-400 font-mono">2800ms Time Window</span>
+                    <span>Required Blinks:</span>
+                    <span className="font-bold text-cyan-400 font-mono">
+                      {blinkStrictness === 'strict' ? '2 Sequential Blinks' : '1 Blink'}
+                    </span>
                   </div>
                 </div>
 

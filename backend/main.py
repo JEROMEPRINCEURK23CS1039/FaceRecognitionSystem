@@ -14,7 +14,7 @@ import json
 import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 import mediapipe as mp
@@ -337,6 +337,14 @@ def stats():
 @app.get("/api/logs")
 def logs(limit: int = 50):
     return get_logs(limit)
+
+@app.get("/api/logs/export")
+def export_logs():
+    logs_data = get_logs(limit=10000)
+    csv_content = "timestamp,user,event,confidence,liveness\n"
+    for l in logs_data:
+        csv_content += f"{l.get('timestamp','')},{l.get('name','')},{l.get('event','')},{l.get('confidence','')},{l.get('liveness', False)}\n"
+    return PlainTextResponse(content=csv_content, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=security_logs.csv"})
 
 
 @app.get("/api/logs/analysis")
