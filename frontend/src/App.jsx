@@ -220,6 +220,55 @@ function WaveChart() {
 }
 
 function TacticalMap() {
+  const [dots, setDots] = useState([]);
+  const [serverHealth, setServerHealth] = useState('connecting');
+  
+  useEffect(() => {
+    const eventSource = new EventSource(`${API_BASE}/events`);
+    
+    let pingTimeout;
+    const resetPingTimeout = () => {
+      clearTimeout(pingTimeout);
+      setServerHealth('healthy');
+      pingTimeout = setTimeout(() => setServerHealth('down'), 3000);
+    };
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'ping') {
+        resetPingTimeout();
+      } else if (data.type === 'LOGIN_SUCCESS' || data.type === 'LOGIN_FAILED') {
+        const color = data.type === 'LOGIN_SUCCESS' ? 'bg-cyan-400' : 'bg-rose-400';
+        const innerColor = data.type === 'LOGIN_SUCCESS' ? 'bg-cyan-500' : 'bg-rose-500';
+        
+        const topPercent = 20 + Math.random() * 60;
+        const leftPercent = 15 + Math.random() * 70;
+        
+        const newDot = {
+          id: Date.now() + Math.random(),
+          topPercent, leftPercent,
+          color, innerColor
+        };
+        
+        setDots(prev => [...prev, newDot]);
+        
+        setTimeout(() => {
+          setDots(prev => prev.filter(d => d.id !== newDot.id));
+        }, 3000);
+      }
+    };
+    
+    eventSource.onerror = () => {
+      setServerHealth('down');
+    };
+
+    resetPingTimeout();
+    return () => {
+      eventSource.close();
+      clearTimeout(pingTimeout);
+    };
+  }, []);
+
   return (
     <div className="relative w-full h-36 flex items-center justify-center overflow-hidden bg-white/[0.01] border border-white/5 rounded-2xl">
       <svg className="w-full h-full opacity-35 p-2" viewBox="0 0 400 180" fill="none">
@@ -239,24 +288,40 @@ function TacticalMap() {
           <circle cx="320" cy="135" r="1.5" />
         </g>
       </svg>
-      <div className="absolute top-[50px] left-[80px]">
-        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-emerald-400 opacity-75 map-pulse"></span>
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+
+      <AnimatePresence>
+        {dots.map(dot => (
+          <motion.div
+            key={dot.id}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            className="absolute"
+            style={{ top: `${dot.topPercent}%`, left: `${dot.leftPercent}%` }}
+          >
+            <span className={`absolute inline-flex h-3.5 w-3.5 rounded-full ${dot.color} opacity-75 map-pulse`}></span>
+            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${dot.innerColor}`}></span>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      <div className="absolute top-[30px] right-[40px] flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded">
+        <div className="relative flex items-center justify-center">
+          <span className={`absolute inline-flex h-2.5 w-2.5 rounded-full ${serverHealth === 'healthy' ? 'bg-emerald-400 map-pulse' : 'bg-rose-400'} opacity-75`}></span>
+          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${serverHealth === 'healthy' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+        </div>
+        <span className="text-[6px] text-slate-400 uppercase font-mono tracking-widest mt-0.5">
+          NODE-0 {serverHealth === 'healthy' ? 'OK' : 'ERR'}
+        </span>
       </div>
-      <div className="absolute top-[40px] left-[210px]">
-        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-cyan-400 opacity-75 map-pulse" style={{ animationDelay: '0.5s' }}></span>
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
-      </div>
-      <div className="absolute top-[125px] left-[320px]">
-        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-emerald-400 opacity-75 map-pulse" style={{ animationDelay: '1s' }}></span>
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-      </div>
-      <div className="absolute top-[100px] left-[110px]">
-        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-rose-400 opacity-75 map-pulse" style={{ animationDelay: '1.5s' }}></span>
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-      </div>
+
       <div className="absolute bottom-2 left-3 text-[7px] font-mono text-cyan-400/50 uppercase tracking-widest">Global Node Activity Map</div>
-      <div className="absolute bottom-2 right-3 text-[7px] font-mono text-emerald-400 bg-emerald-950/40 px-1 border border-emerald-500/20 rounded">SYSTEM SECURED</div>
+      
+      {serverHealth === 'healthy' ? (
+        <div className="absolute bottom-2 right-3 text-[7px] font-mono text-emerald-400 bg-emerald-950/40 px-1 border border-emerald-500/20 rounded">SYSTEM SECURED</div>
+      ) : (
+        <div className="absolute bottom-2 right-3 text-[7px] font-mono text-rose-400 bg-rose-950/40 px-1 border border-rose-500/20 rounded">CONNECTION LOST</div>
+      )}
     </div>
   );
 }

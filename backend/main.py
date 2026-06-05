@@ -9,11 +9,19 @@ import base64
 import numpy as np
 import cv2
 import threading
-from fastapi import FastAPI, HTTPException
+import asyncio
+import json
+import time
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 import mediapipe as mp
+
+# Global list for SSE event broadcasting
+global_events = []
+
 
 from database import save_user, get_all_users, log_session, get_logs, get_stats, save_secret, get_user_secrets, delete_secret
 from keystore import generate_challenge, validate_challenge, encrypt_secret, decrypt_secret
@@ -199,6 +207,28 @@ def _format_logs(logs_data: list) -> str:
         for l in logs_data
     )
 
+def add_event(event_type: str, data: dict = None):
+    global_events.append((time.time(), {"type": event_type, "data": data or {}}))
+    if len(global_events) > 100:
+        global_events.pop(0)
+
+@app.get("/api/events")
+async def sse_events(request: Request, last_ts: float = 0.0):
+    async def event_generator():
+        last_seen = last_ts
+        while True:
+            if await request.is_disconnected():
+                break
+            new_events = [e for ts, e in global_events if ts > last_seen]
+            if new_events:
+                for e in new_events:
+                    yield f"data: {json.dumps(e)}\n\n"
+                last_seen = max(ts for ts, e in global_events)
+            else:
+                yield f"data: {json.dumps({'type': 'ping'})}\n\n"
+            await asyncio.sleep(1.0)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 # ---------------------------------------------------------------------------
 # Biometric API routes
 # ---------------------------------------------------------------------------
@@ -232,6 +262,7 @@ def login(req: LoginRequest):
     try:
         img = decode_base64_image(req.image)
         if img is None or img.size == 0:
+            add_event("LOGIN_FAILED", {"reason": "Invalid camera frame"})
             raise HTTPException(status_code=400, detail="Invalid or empty camera frame. Please try again.")
         height, width = img.shape[:2]
         aspect_ratio = width / height
@@ -239,6 +270,7 @@ def login(req: LoginRequest):
         with face_mesh_lock:
             results = face_mesh.process(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
         if not results.multi_face_landmarks:
+            add_event("LOGIN_FAILED", {"reason": "No face detected"})
             raise HTTPException(status_code=400, detail="No face detected in the frame.")
         landmarks = results.multi_face_landmarks[0].landmark
 
@@ -247,6 +279,7 @@ def login(req: LoginRequest):
 
         users = get_all_users()
         if not users:
+            add_event("LOGIN_FAILED", {"reason": "No users in vault"})
             raise HTTPException(status_code=400, detail="No users registered in biometric vault.")
 
         best_match = min(users, key=lambda u: np.linalg.norm(query_vector - np.array(u["embedding"])))
@@ -261,13 +294,16 @@ def login(req: LoginRequest):
                 confidence = 100.0 - (min_distance - 0.4) / (threshold - 0.4) * 50.0
             confidence = round(confidence, 1)
             log_session(best_match["name"], "Facial Login Verified", confidence, req.liveness)
+            add_event("LOGIN_SUCCESS", {"user": best_match["name"]})
             return {"status": "success", "name": best_match["name"], "confidence": confidence, "ear": avg_ear, "enhancement": status}
 
         log_session("Unknown", "Access Denied: Similarity Rejected", 0.0, req.liveness)
+        add_event("LOGIN_FAILED", {"reason": "Signature mismatch"})
         raise HTTPException(status_code=401, detail="Biometric identity signature mismatch.")
     except HTTPException:
         raise
     except Exception as e:
+        add_event("LOGIN_FAILED", {"reason": "Server error"})
         raise HTTPException(status_code=500, detail=f"Authentication failed: {e}")
 
 
