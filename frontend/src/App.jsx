@@ -7,7 +7,9 @@ import {
   Activity, Shield, AlertTriangle, Zap, Clock, Bell, User, LayoutGrid, Database, Cog, FileText
 } from 'lucide-react';
 import Aurora from './Aurora';
+import Aurora from './Aurora';
 import DotField from './DotField';
+import LetterGlitch from './LetterGlitch';
 import GradientText from './GradientText';
 import NeuralLogo from './NeuralLogo';
 
@@ -1456,8 +1458,12 @@ function App() {
             </div>
           ) : activeTab === 'vault' ? (
             /* Volatile decrypted vault container page */
-            <div className="max-w-4xl mx-auto tech-panel rounded-3xl p-6 shadow-emerald-glow">
-              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+            <div className="max-w-4xl mx-auto amoled-vault-panel p-6 relative">
+              <div className="absolute inset-0 z-0 pointer-events-none opacity-20 mix-blend-screen rounded-3xl overflow-hidden">
+                <LetterGlitch glitchSpeed={40} centerVignette={false} outerVignette={true} smooth={true} />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
                 <div className="flex items-center gap-2.5">
                   <KeyRound className="w-5 h-5 text-emerald-400" />
                   <div>
@@ -1618,6 +1624,7 @@ function App() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           ) : activeTab === 'logs' ? (
             /* Audit logs tab component rendering */
