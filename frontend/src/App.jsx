@@ -1813,7 +1813,7 @@ function App() {
 
         {/* Floating AI Chatbot overlay drawer (only if tab isn't already active chat) */}
         {isLoggedIn && activeTab !== 'chat' && (
-          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end animate-bounce">
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
             <AnimatePresence>
               {chatOpen && (
                 <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.9 }} className="chat-panel w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col mb-4 overflow-hidden">
