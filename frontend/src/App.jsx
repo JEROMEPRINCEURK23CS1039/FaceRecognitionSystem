@@ -1902,7 +1902,7 @@ function App() {
                   <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
                   <div>
                     <h3 className="text-sm font-bold text-white tracking-wide font-display">AEGIS COGNITIVE SECURITY ASSISTANT</h3>
-                    <p className="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">MODEL: Local Qwen 1.5B (Active)</p>
+                    <p className="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">MODEL: Gemini 2.5 Flash (Active)</p>
                   </div>
                 </div>
                 <button onClick={() => setActiveTab('dashboard')} className="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-bold border border-white/5">Dashboard Hub</button>
@@ -1953,7 +1953,7 @@ function App() {
                       <BrainCircuit className="w-5 h-5 text-cyan-400 animate-pulse" />
                       <div>
                         <h4 className="font-bold text-sm text-white font-display">AI Security Assistant</h4>
-                        <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-display">Local Qwen 1.5B</p>
+                        <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-display">Gemini 2.5 Flash</p>
                       </div>
                     </div>
                     <button onClick={() => setChatOpen(false)} className="text-xs text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg">Close</button>
