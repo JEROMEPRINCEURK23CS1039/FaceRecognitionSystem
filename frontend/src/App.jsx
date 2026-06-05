@@ -9,6 +9,7 @@ import {
 import Aurora from './Aurora';
 import DotField from './DotField';
 import LetterGlitch from './LetterGlitch';
+import DarkVeil from './DarkVeil';
 import GradientText from './GradientText';
 import NeuralLogo from './NeuralLogo';
 
@@ -1027,19 +1028,16 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#070a13] text-slate-100 relative overflow-hidden font-sans selection:bg-cyan-500/30 w-full">
-      {/* Interactive DotField Background */}
+    <div className="min-h-screen flex bg-black text-slate-100 relative overflow-hidden font-sans selection:bg-cyan-500/30 w-full">
+      {/* Interactive DarkVeil Background */}
       <div className="absolute inset-0 z-0">
-        <DotField
-          dotRadius={1.5}
-          dotSpacing={14}
-          bulgeStrength={67}
-          glowRadius={160}
-          sparkle={true}
-          waveAmplitude={0}
-          gradientFrom="rgba(6, 182, 212, 0.6)"
-          gradientTo="rgba(139, 92, 246, 0.4)"
-          glowColor="rgba(6, 182, 212, 0.25)"
+        <DarkVeil
+          hueShift={0}
+          noiseIntensity={0}
+          scanlineIntensity={0}
+          speed={0.5}
+          scanlineFrequency={0}
+          warpAmount={0}
         />
       </div>
       
