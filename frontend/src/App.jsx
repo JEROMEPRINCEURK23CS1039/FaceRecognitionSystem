@@ -4,11 +4,12 @@ import {
   Info, CheckCircle, XCircle, Unlock, UserPlus,
   ScanFace, Sun, Eye, EyeOff, LogOut,
   KeyRound, Plus, Copy, Trash2, Lock, Timer, BrainCircuit,
-  Activity, Shield, AlertTriangle, Zap, Clock
+  Activity, Shield, AlertTriangle, Zap, Clock, Bell, User, LayoutGrid, Database, Cog, FileText
 } from 'lucide-react';
 import Aurora from './Aurora';
 import GradientText from './GradientText';
 import NeuralLogo from './NeuralLogo';
+import FaceMesh3D from './FaceMesh3D';
 
 // API base
 const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
@@ -76,16 +77,14 @@ const renderMarkdown = (text) => {
 
     if (trimmed.startsWith('```')) {
       if (inCodeBlock) {
-        // End of code block
         elements.push(
-          <pre key={`code-${i}`} className="p-3 my-2 rounded bg-slate-950/80 border border-white/10 font-mono text-[10px] text-cyan-300 overflow-x-auto select-all leading-normal">
+          <pre key={`code-${i}`} className="p-3 my-2 rounded bg-slate-955/85 border border-white/10 font-mono text-[10px] text-cyan-300 overflow-x-auto select-all leading-normal">
             <code>{codeBlockLines.join('\n')}</code>
           </pre>
         );
         codeBlockLines = [];
         inCodeBlock = false;
       } else {
-        // Start of code block
         inCodeBlock = true;
       }
       continue;
@@ -101,7 +100,6 @@ const renderMarkdown = (text) => {
       continue;
     }
 
-    // Headers
     if (trimmed.startsWith('###')) {
       elements.push(<h4 key={i} className="text-xs font-bold text-cyan-400 mt-2.5 mb-1 uppercase tracking-wide font-display">{parseInlineMarkdown(trimmed.replace(/^###\s*/, ''))}</h4>);
       continue;
@@ -115,7 +113,6 @@ const renderMarkdown = (text) => {
       continue;
     }
 
-    // Check for bullet list item
     if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
       const content = trimmed.replace(/^[\*\-]\s*/, '');
       elements.push(
@@ -126,7 +123,6 @@ const renderMarkdown = (text) => {
       continue;
     }
 
-    // Check for numeric list item
     if (/^\d+\./.test(trimmed)) {
       const content = trimmed.replace(/^\d+\.\s*/, '');
       const num = trimmed.match(/^\d+/)[0];
@@ -139,11 +135,9 @@ const renderMarkdown = (text) => {
       continue;
     }
 
-    // Regular paragraph
     elements.push(<p key={i} className="text-xs text-slate-300 leading-relaxed mt-0.5">{parseInlineMarkdown(trimmed)}</p>);
   }
 
-  // Handle unclosed code block
   if (inCodeBlock && codeBlockLines.length > 0) {
     elements.push(
       <pre key="code-unclosed" className="p-3 my-2 rounded bg-slate-950/80 border border-white/10 font-mono text-[10px] text-cyan-300 overflow-x-auto select-all leading-normal">
@@ -155,8 +149,90 @@ const renderMarkdown = (text) => {
   return elements;
 };
 
+function WaveChart() {
+  return (
+    <svg className="w-full h-24 overflow-visible" viewBox="0 0 200 80">
+      <defs>
+        <linearGradient id="cyan-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+        </linearGradient>
+        <linearGradient id="purple-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50"
+        fill="none"
+        stroke="#8b5cf6"
+        strokeWidth="1.2"
+        className="opacity-70"
+      />
+      <path
+        d="M 0,55 Q 25,65 50,55 T 100,45 T 150,65 T 200,50 L 200,80 L 0,80 Z"
+        fill="url(#purple-grad)"
+        className="opacity-10"
+      />
+      <path
+        d="M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45"
+        fill="none"
+        stroke="#06b6d4"
+        strokeWidth="2"
+      />
+      <path
+        d="M 0,45 Q 25,25 50,40 T 100,55 T 150,35 T 200,45 L 200,80 L 0,80 Z"
+        fill="url(#cyan-grad)"
+        className="opacity-25"
+      />
+    </svg>
+  );
+}
+
+function TacticalMap() {
+  return (
+    <div className="relative w-full h-36 flex items-center justify-center overflow-hidden bg-white/[0.01] border border-white/5 rounded-2xl">
+      <svg className="w-full h-full opacity-35 p-2" viewBox="0 0 400 180" fill="none">
+        <g fill="rgba(6,182,212,0.35)">
+          <circle cx="60" cy="50" r="1.5" /><circle cx="70" cy="45" r="1.5" /><circle cx="80" cy="40" r="1.5" />
+          <circle cx="70" cy="55" r="1.5" /><circle cx="80" cy="50" r="1.5" /><circle cx="90" cy="55" r="1.5" />
+          <circle cx="80" cy="65" r="1.5" /><circle cx="90" cy="70" r="1.5" />
+          <circle cx="100" cy="100" r="1.5" /><circle cx="110" cy="110" r="1.5" /><circle cx="120" cy="120" r="1.5" />
+          <circle cx="110" cy="130" r="1.5" /><circle cx="115" cy="140" r="1.5" /><circle cx="120" cy="150" r="1.5" />
+          <circle cx="180" cy="40" r="1.5" /><circle cx="190" cy="35" r="1.5" /><circle cx="200" cy="40" r="1.5" /><circle cx="210" cy="35" r="1.5" />
+          <circle cx="200" cy="50" r="1.5" /><circle cx="210" cy="45" r="1.5" /><circle cx="220" cy="40" r="1.5" /><circle cx="230" cy="45" r="1.5" />
+          <circle cx="220" cy="55" r="1.5" /><circle cx="230" cy="60" r="1.5" /><circle cx="240" cy="50" r="1.5" /><circle cx="250" cy="55" r="1.5" />
+          <circle cx="260" cy="60" r="1.5" /><circle cx="270" cy="65" r="1.5" /><circle cx="280" cy="70" r="1.5" />
+          <circle cx="180" cy="80" r="1.5" /><circle cx="190" cy="85" r="1.5" /><circle cx="200" cy="95" r="1.5" />
+          <circle cx="190" cy="105" r="1.5" /><circle cx="200" cy="110" r="1.5" /><circle cx="205" cy="120" r="1.5" />
+          <circle cx="310" cy="120" r="1.5" /><circle cx="320" cy="125" r="1.5" /><circle cx="330" cy="130" r="1.5" />
+          <circle cx="320" cy="135" r="1.5" />
+        </g>
+      </svg>
+      <div className="absolute top-[50px] left-[80px]">
+        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-emerald-400 opacity-75 map-pulse"></span>
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+      </div>
+      <div className="absolute top-[40px] left-[210px]">
+        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-cyan-400 opacity-75 map-pulse" style={{ animationDelay: '0.5s' }}></span>
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+      </div>
+      <div className="absolute top-[125px] left-[320px]">
+        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-emerald-400 opacity-75 map-pulse" style={{ animationDelay: '1s' }}></span>
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+      </div>
+      <div className="absolute top-[100px] left-[110px]">
+        <span className="absolute inline-flex h-3.5 w-3.5 rounded-full bg-rose-400 opacity-75 map-pulse" style={{ animationDelay: '1.5s' }}></span>
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+      </div>
+      <div className="absolute bottom-2 left-3 text-[7px] font-mono text-cyan-400/50 uppercase tracking-widest">Global Node Activity Map</div>
+      <div className="absolute bottom-2 right-3 text-[7px] font-mono text-emerald-400 bg-emerald-950/40 px-1 border border-emerald-500/20 rounded">SYSTEM SECURED</div>
+    </div>
+  );
+}
 
 function App() {
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'vault' | 'logs' | 'settings' | 'chat'
 
   // App States
   const [activeMode, setActiveMode] = useState('login'); // 'login' | 'register'
@@ -207,7 +283,6 @@ function App() {
   const [isControllingLLM, setIsControllingLLM] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(null); // 'scanning' | 'success' | 'failed'
 
-
   // Toast notifications
   const [toast, setToast] = useState({ show: false, title: '', desc: '', type: 'info' });
 
@@ -215,7 +290,7 @@ function App() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
-  const isProcessingRef = useRef(false); // Synchronous guard for race condition fix
+  const isProcessingRef = useRef(false);
 
   // Vault Key-Store State
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
@@ -239,10 +314,10 @@ function App() {
     }
   }, [toast.show]);
 
-  // Spotlight GSAP Effect for all Glass Panels
+  // Spotlight Effect for all Glass Panels
   useEffect(() => {
     const handleMouseMove = (e) => {
-      document.querySelectorAll('.glass-panel').forEach((panel) => {
+      document.querySelectorAll('.glass-panel, .tech-panel').forEach((panel) => {
         const rect = panel.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -313,7 +388,7 @@ function App() {
     }
   };
 
-  // ── Vault Security: Tab Visibility Purge ──
+  // Vault Security: Tab Visibility Purge
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden && vaultUnlocked) {
@@ -325,7 +400,7 @@ function App() {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [vaultUnlocked]);
 
-  // ── Vault Security: 2-Minute Idle Timeout ──
+  // Vault Security: 2-Minute Idle Timeout
   useEffect(() => {
     if (!vaultUnlocked) return;
     const resetIdle = () => {
@@ -506,6 +581,7 @@ function App() {
       fetchSecurityScore();
     }
   }, [isLoggedIn, logs]);
+
   const sendChatMessage = async (e) => {
     if (e) e.preventDefault();
     if (!chatInput.trim() || isSendingChat) return;
@@ -583,8 +659,6 @@ function App() {
         isBlinkingRef.current = false;
         setAlignmentStatus('No Face');
         showToast('Camera Initialized', 'Secure authentication stream connected.', 'success');
-        
-        // Start processing frames sequentially
         startFrameCapture();
       }
     } catch (err) {
@@ -607,15 +681,12 @@ function App() {
     isProcessingRef.current = false;
   };
 
-  // Frame Capture and Vector Processing
-  // Offscreen canvas is created once and reused across frames for efficiency
   const captureCanvas = useRef(null);
   const captureCtx = useRef(null);
 
   const startFrameCapture = () => {
     if (intervalRef.current) clearTimeout(intervalRef.current);
 
-    // Create offscreen canvas once
     if (!captureCanvas.current) {
       captureCanvas.current = document.createElement('canvas');
       captureCanvas.current.width = 640;
@@ -630,7 +701,6 @@ function App() {
     let localBlinkSuccess = false;
 
     const processFrame = async () => {
-      // Use synchronous ref guard instead of stale closure state
       if (!videoRef.current || isProcessingRef.current) return;
 
       frameCount++;
@@ -654,11 +724,9 @@ function App() {
             setAlignmentStatus(data.alignment);
             setEnhancementStatus(data.enhancement);
 
-            // Score alignment quality (Perfect=3, Tilted=2, Turned=1)
             const score = data.alignment === 'Perfect' ? 3 : data.alignment === 'Face Tilted' ? 2 : data.alignment === 'Face Turned' ? 1 : 0;
             if (score > bestScore) { bestScore = score; bestFrame = base64Image; }
 
-            // Temporal blink detector
             if (data.ear < 0.18 && !isBlinkingRef.current) {
               isBlinkingRef.current = true;
             } else if (isBlinkingRef.current && data.ear > 0.22) {
@@ -680,8 +748,6 @@ function App() {
       }
 
       if (frameCount >= 8) {
-        // CRITICAL: Set synchronous ref guard IMMEDIATELY to prevent race condition
-        // This stops any other in-flight callbacks from entering this block
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
 
@@ -695,12 +761,10 @@ function App() {
           await handleBiometricAuthentication(finalFrame, passedLiveness);
         }
       } else {
-        // Schedule the next frame capture ONLY after the current one has finished processing
         intervalRef.current = setTimeout(processFrame, 350);
       }
     };
 
-    // Schedule the first frame
     intervalRef.current = setTimeout(processFrame, 350);
   };
 
@@ -749,7 +813,6 @@ function App() {
     }
   };
 
-
   const handleBiometricAuthentication = async (base64Image, passedLiveness) => {
     try {
       const response = await fetch(`${API_BASE}/login`, {
@@ -794,7 +857,6 @@ function App() {
     }
   };
 
-
   const logout = () => {
     purgeVault();
     setIsLoggedIn(false);
@@ -802,13 +864,11 @@ function App() {
     setActiveMode('login');
     setBlinkProgress(0);
     setBlinkSuccess(false);
+    setActiveTab('dashboard');
     showToast('Session Terminated', 'Securely logged out from vault.', 'info');
   };
 
-  // ── Vault Key-Store Functions ──
-
   const purgeVault = () => {
-    // Overwrite secrets in memory with nulls then clear
     setVaultSecrets(prev => {
       prev.forEach(s => { s.value = null; s.label = null; });
       return [];
@@ -825,7 +885,6 @@ function App() {
   const unlockVault = async () => {
     setVaultLoading(true);
     try {
-      // Step 1: Get a challenge
       const challengeRes = await fetch(`${API_BASE}/vault/challenge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -833,7 +892,6 @@ function App() {
       });
       const challengeData = await challengeRes.json();
 
-      // Step 2: Unlock with challenge
       const unlockRes = await fetch(`${API_BASE}/vault/unlock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -884,7 +942,6 @@ function App() {
         setNewSecretLabel('');
         setNewSecretValue('');
         setShowAddSecret(false);
-        // Re-unlock to refresh the list
         await unlockVault();
         fetchLogs();
       } else {
@@ -941,16 +998,15 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between relative overflow-hidden font-sans selection:bg-cyan-500/30">
-      
-      {/* Cybernetic Aurora WebGL Background */}
+    <div className="min-h-screen flex bg-[#070a13] text-slate-100 relative overflow-hidden font-sans selection:bg-cyan-500/30 w-full">
+      {/* Cybernetic Aurora Background */}
       <Aurora
         colorStops={["#06B6D4", "#8B5CF6", "#06B6D4"]}
         blend={0.5}
         amplitude={1.0}
         speed={0.8}
       />
-
+      
       {/* Global Toast System */}
       <AnimatePresence>
         {toast.show && (
@@ -979,848 +1035,448 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <header className="container mx-auto px-6 py-6 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.15)] overflow-hidden border border-white/10">
-            <NeuralLogo size={32} />
+      {/* Sidebar Left Navigation */}
+      <aside className="w-16 shrink-0 border-r border-white/5 bg-[#0a0d1a]/80 backdrop-blur-md flex flex-col items-center py-6 gap-8 z-30 relative justify-between">
+        <div className="flex flex-col items-center gap-8 w-full">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 flex items-center justify-center border border-white/10 shadow-lg cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+            <NeuralLogo size={24} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white glow-cyan font-display">AEGIS CORE</h1>
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest">Neural Biometric Gateway</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {!isLoggedIn && (
-            <button 
-              id="dev-bypass-btn"
-              onClick={() => {
-                setIsLoggedIn(true);
-                setLoggedInUser('DevAdmin');
-                showToast('Dev Mode', 'Bypassed biometric check successfully.', 'success');
-              }}
-              className="px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-bold text-purple-400 hover:text-white hover:bg-purple-500/20 transition-all cursor-pointer animate-pulse"
-            >
-              Dev Bypass
+          
+          <nav className="flex flex-col gap-4 w-full px-2">
+            <button onClick={() => setActiveTab('dashboard')} className={`p-3 rounded-xl border transition-all flex justify-center ${activeTab === 'dashboard' ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`} title="Dashboard">
+              <LayoutGrid className="w-5 h-5" />
             </button>
-          )}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Engine Status: Active</span>
-          </div>
+            <button onClick={() => { if (isLoggedIn) unlockVault(); setActiveTab('vault'); }} className={`p-3 rounded-xl border transition-all flex justify-center ${activeTab === 'vault' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`} title="Key Store Vault">
+              <KeyRound className="w-5 h-5" />
+            </button>
+            <button onClick={() => { if (isLoggedIn) setChatOpen(true); setActiveTab('chat'); }} className={`p-3 rounded-xl border transition-all flex justify-center ${activeTab === 'chat' ? 'border-purple-500/30 bg-purple-500/10 text-purple-400' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`} title="AI Chatbot">
+              <BrainCircuit className="w-5 h-5" />
+            </button>
+            <button onClick={() => setActiveTab('logs')} className={`p-3 rounded-xl border transition-all flex justify-center ${activeTab === 'logs' ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`} title="Timeline Logs">
+              <FileText className="w-5 h-5" />
+            </button>
+          </nav>
         </div>
-      </header>
 
-      {/* Main Grid View */}
-      <main className="container mx-auto px-6 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="flex flex-col gap-4">
+          <button onClick={() => setActiveTab('settings')} className={`p-3 rounded-xl border transition-all flex justify-center ${activeTab === 'settings' ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`} title="System Configuration">
+            <Cog className="w-5 h-5" />
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 z-20 relative">
         
-        {/* Left: Video Feed Stream Component */}
-        <section className="lg:col-span-7 flex flex-col gap-6">
-          <motion.div 
-            animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
-            transition={{ duration: 0.4 }}
-            className="glass-panel rounded-3xl overflow-hidden p-6 relative flex flex-col items-center justify-center min-h-[460px]"
-          >
-            {/* Camera feed canvas container */}
-            <div className="w-full relative rounded-2xl overflow-hidden bg-black/40 border border-white/5 aspect-video flex items-center justify-center">
-              <video 
-                ref={videoRef}
-                className="w-full h-full object-cover scale-x-[-1]"
-                autoPlay 
-                playsInline 
-                muted
-              />
-
-              {/* Processing Cloud Embeddings Overlay */}
-              {isProcessing && (
-                <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 z-20">
-                  {/* Face ID Icon Container with concentric rings and morphing states */}
-                  <motion.div
-                    animate={
-                      verificationStatus === 'failed' ? { x: [-10, 10, -10, 10, -5, 5, 0] } : {}
-                    }
-                    transition={{ duration: 0.5 }}
-                    className="mb-6 relative w-24 h-24 flex items-center justify-center"
-                  >
-                    {verificationStatus === 'scanning' && (
-                      <>
-                        <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping" />
-                        <div className="absolute inset-1 rounded-full border border-cyan-400/15 animate-ping" style={{ animationDelay: '0.3s' }} />
-                        <div className="absolute inset-3 rounded-full border border-cyan-400/20 animate-pulse" />
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                          className="absolute inset-2 rounded-full border-2 border-transparent border-t-cyan-400/40 border-r-cyan-400/20"
-                        />
-                        <ScanFace className="w-12 h-12 text-cyan-400 animate-pulse" />
-                      </>
-                    )}
-                    {verificationStatus === 'success' && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0, rotate: -180 }}
-                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                        className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-                      >
-                        <CheckCircle className="w-10 h-10" />
-                      </motion.div>
-                    )}
-                    {verificationStatus === 'failed' && (
-                      <motion.div
-                        initial={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                        className="w-20 h-20 rounded-full bg-rose-500/15 border-2 border-rose-400 flex items-center justify-center text-rose-400 shadow-[0_0_30px_rgba(244,63,94,0.3)]"
-                      >
-                        <XCircle className="w-10 h-10" />
-                      </motion.div>
-                    )}
-                  </motion.div>
-
-                  <motion.h3 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-lg font-bold text-white mb-2 tracking-wide uppercase glow-cyan font-display"
-                  >
-                    {verificationStatus === 'scanning' ? 'Verifying Identity' :
-                     verificationStatus === 'success' ? 'Access Granted' : 'Access Denied'}
-                  </motion.h3>
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-xs text-slate-400 max-w-sm"
-                  >
-                    {verificationStatus === 'scanning' ? 'Matching topological face mesh vector coordinates...' :
-                     verificationStatus === 'success' ? 'Biometric match success. Decrypting vault keys...' :
-                     'Face ID mismatch or liveness verification failed.'}
-                  </motion.p>
-                </div>
-              )}
-
-
-              {/* Scanning Active overlays */}
-              {streamActive && <div className="laser-line" />}
-
-              {streamActive && (
-                <div className="absolute inset-8 border border-cyan-500/20 rounded-xl pointer-events-none">
-                  {/* High-tech corners */}
-                  <div className="absolute -top-1.5 -left-1.5 w-6 h-6 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-md" />
-                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-md" />
-                  <div className="absolute -bottom-1.5 -left-1.5 w-6 h-6 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-md" />
-                  <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-md" />
-                  
-                  {/* Cyberpunk details / labels */}
-                  <div className="absolute top-2 left-2 text-[8px] font-mono text-cyan-400 bg-cyan-950/60 px-1 rounded border border-cyan-500/30 tracking-wider">
-                    SYS.REC.ACTIVE
-                  </div>
-                  <div className="absolute top-2 right-2 text-[8px] font-mono text-purple-400 bg-purple-950/60 px-1 rounded border border-purple-500/30 tracking-wider">
-                    FPS: 30 / HD
-                  </div>
-                  <div className="absolute bottom-2 right-2 text-[8px] font-mono text-cyan-400 bg-cyan-950/60 px-1 rounded border border-cyan-500/30 tracking-wider">
-                    LIVENESS: {(liveEar * 100).toFixed(0)}%
-                  </div>
-                </div>
-              )}
-
-              {streamActive && !isProcessing && (
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
-                  <div className="w-52 h-52 rounded-full border border-cyan-400/10 flex items-center justify-center animate-pulse">
-                    <div className="w-44 h-44 rounded-full border border-dashed border-cyan-400/20 flex items-center justify-center animate-[spin_30s_linear_infinite]">
-                      <div className="w-28 h-28 rounded-full border border-cyan-400/30 flex items-center justify-center">
-                        <ScanFace className="w-12 h-12 text-cyan-400/50 animate-pulse" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-
-              {/* Camera Offline Mock screen with animated elements */}
-              {!streamActive && (
-                <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
-                  {/* Radar sweep animation behind icon */}
-                  <div className="relative w-32 h-32 flex items-center justify-center mb-4">
-                    <div className="absolute inset-0 rounded-full border border-cyan-500/10" />
-                    <div className="absolute inset-4 rounded-full border border-cyan-500/8" />
-                    <div className="absolute inset-8 rounded-full border border-cyan-500/6" />
-                    <div className="radar-sweep" />
-                    <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 z-10">
-                      <ScanFace className="w-8 h-8" />
-                    </div>
-                  </div>
-                  {/* Floating particles */}
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="particle" style={{ 
-                      left: `${15 + Math.random() * 70}%`, 
-                      top: `${15 + Math.random() * 70}%`,
-                      animationDelay: `${i * 0.7}s`,
-                      width: `${2 + Math.random() * 2}px`,
-                      height: `${2 + Math.random() * 2}px`
-                    }} />
-                  ))}
-                  <h3 className="text-lg font-bold text-white mb-1 glitch-text font-display" data-text="SCANNER OFFLINE">SCANNER OFFLINE</h3>
-                  <p className="text-xs text-slate-400 max-w-xs">Initiate biometric feed stream to start physiological liveness validation.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Circular Blink / EAR Progress */}
-            <div className="w-full mt-4 flex flex-col sm:flex-row items-center justify-between bg-white/5 border border-white/5 rounded-2xl p-4 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="relative w-12 h-12 flex items-center justify-center">
-                  <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="24" cy="24" r="20" className="stroke-white/10" strokeWidth="3" fill="transparent" />
-                    <circle 
-                      cx="24" 
-                      cy="24" 
-                      r="20" 
-                      className="stroke-cyan-400 transition-all duration-300" 
-                      strokeWidth="3" 
-                      fill="transparent" 
-                      strokeDasharray="125.6" 
-                      strokeDashoffset={125.6 - (blinkProgress / 100) * 125.6} 
-                    />
-                  </svg>
-                  <div className="absolute text-[9px] font-bold text-cyan-400">EAR</div>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">Liveness Diagnostics</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] text-slate-400">EAR: <span className="font-mono text-cyan-400 font-bold">{liveEar.toFixed(3)}</span></span>
-                    <span className="text-slate-600">|</span>
-                    <span className={`text-[10px] font-bold ${
-                      alignmentStatus === 'Perfect' ? 'text-emerald-400 animate-pulse' :
-                      alignmentStatus === 'No Face' ? 'text-slate-500' : 'text-yellow-400'
-                    }`}>
-                      {alignmentStatus === 'Perfect' ? 'Optimal Alignment' :
-                       alignmentStatus === 'Face Turned' ? 'Center Your Face' :
-                       alignmentStatus === 'Face Tilted' ? 'Hold Head Straight' : 'Position Face in Scanner'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2 text-right">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  blinkSuccess ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' :
-                  'bg-rose-500/10 border border-rose-500/20 text-rose-400'
-                }`}>
-                  Blinks: {blinkCount}/1
-                </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  alignmentStatus === 'Perfect' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' :
-                  'bg-white/5 border border-white/5 text-slate-400'
-                }`}>
-                  {alignmentStatus === 'Perfect' ? 'Aligned' : 'Aligning'}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Enhancement Status Panel */}
-          <div className="glass-panel rounded-2xl p-4 flex justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500">
-                <Sun className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Algorithmic CLAHE & Gamma</p>
-                <p className="text-[10px] text-slate-400">Automatic low-light compensation pipeline</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Status: <span className="text-emerald-400 font-bold">{enhancementStatus}</span></span>
-            </div>
+        {/* Top Header Status Bar */}
+        <header className="h-16 border-b border-white/5 bg-[#0a0d1a]/40 backdrop-blur-md px-6 flex items-center justify-between z-20 shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold tracking-wider text-white glow-cyan font-display uppercase">AEGIS CORE</span>
+            <span className="text-[10px] text-slate-500">|</span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">VAULT ACCESS PORTAL | v2.8</span>
           </div>
-        </section>
 
-        {/* Right: Interaction Gateway & Dashboard logs */}
-        <section className="lg:col-span-5 flex flex-col gap-6">
-          <AnimatePresence mode="wait">
-            {!isLoggedIn ? (
+          <div className="flex items-center gap-4">
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <div className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-400 flex items-center gap-1.5 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  {loggedInUser}
+                </div>
+                <button onClick={logout} className="p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-rose-500 transition-colors hover:bg-rose-500/10" title="Logout">
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button id="dev-bypass-btn" onClick={() => { setIsLoggedIn(true); setLoggedInUser('DevAdmin'); showToast('Dev Mode', 'Bypassed biometric check successfully.', 'success'); }} className="px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-bold text-purple-400 hover:text-white hover:bg-purple-500/20 transition-all cursor-pointer animate-pulse">
+                  Dev Bypass
+                </button>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-slate-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Online</span>
+                </div>
+              </div>
+            )}
+            <button className="p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white transition-colors relative">
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
+            </button>
+          </div>
+        </header>
+
+        {/* Dynamic tab contents rendering */}
+        <main className="flex-grow p-6 overflow-y-auto scroll-dark">
+          {activeTab === 'dashboard' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
-              /* Auth Panel Screens */
-              <motion.div 
-                key="auth"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                className="glass-panel rounded-3xl p-6 flex flex-col justify-between h-full min-h-[460px]"
-              >
-                <div>
-                  <h2 className="text-lg font-bold text-white mb-2 tracking-wide font-display">SECURE ACCESS GATEWAY</h2>
-                  <p className="text-xs text-slate-400 mb-6">Choose biometric operation to start live authorization.</p>
-
-                  {/* Mode Selector switches */}
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    <motion.button 
-                      whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(6, 182, 212, 0.25)' }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => { stopCamera(); setActiveMode('login'); }}
-                      className={`py-4 px-3 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-300 ${
-                        activeMode === 'login' 
-                        ? 'border-cyan-400 bg-cyan-400/10 text-white' 
-                        : 'border-white/5 bg-white/5 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <Unlock className="w-6 h-6" />
-                      <span className="text-xs font-bold font-display">Scan / Login</span>
-                    </motion.button>
-                    <motion.button 
-                      whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(6, 182, 212, 0.25)' }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => { stopCamera(); setActiveMode('register'); }}
-                      className={`py-4 px-3 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-300 ${
-                        activeMode === 'register' 
-                        ? 'border-cyan-400 bg-cyan-400/10 text-white' 
-                        : 'border-white/5 bg-white/5 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <UserPlus className="w-6 h-6" />
-                      <span className="text-xs font-bold font-display">Register User</span>
-                    </motion.button>
+              {/* Left Column: Video Scanner Hub */}
+              <section className="lg:col-span-5 flex flex-col gap-6">
+                <motion.div animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}} transition={{ duration: 0.4 }} className="tech-panel rounded-3xl p-5 shadow-cyan-glow relative overflow-hidden">
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">BIOMETRIC VALIDATION</h3>
+                      <p className="text-[10px] text-cyan-400/70 font-mono mt-0.5">TARGET: {isLoggedIn ? loggedInUser.toUpperCase() : 'UNKNOWN_IDENTITY'}</p>
+                    </div>
+                    <span className="text-[8px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/30 uppercase font-bold">GATEWAY_ACTIVE</span>
                   </div>
 
-                  {/* Contextual form inputs */}
-                  <div className="space-y-4">
-                    {activeMode === 'register' && (
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Enter Full Name</label>
-                        <div className="relative">
-                          <input 
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            type="text" 
-                            placeholder="John Doe" 
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all duration-300"
-                          />
+                  {/* Camera View box */}
+                  <div className="w-full relative rounded-2xl overflow-hidden bg-black/50 border border-white/5 aspect-video flex items-center justify-center">
+                    <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" autoPlay playsInline muted />
+                    
+                    {isProcessing && (
+                      <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
+                        <motion.div animate={verificationStatus === 'failed' ? { x: [-10, 10, -10, 10, -5, 5, 0] } : {}} transition={{ duration: 0.5 }} className="mb-4 relative w-16 h-16 flex items-center justify-center">
+                          {verificationStatus === 'scanning' && (
+                            <>
+                              <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping" />
+                              <div className="absolute inset-1 rounded-full border border-cyan-400/15 animate-ping" style={{ animationDelay: '0.3s' }} />
+                              <div className="absolute inset-3 rounded-full border border-cyan-400/20 animate-pulse" />
+                              <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }} className="absolute inset-2 rounded-full border-2 border-transparent border-t-cyan-400/40 border-r-cyan-400/20" />
+                              <ScanFace className="w-8 h-8 text-cyan-400 animate-pulse" />
+                            </>
+                          )}
+                          {verificationStatus === 'success' && (
+                            <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-14 h-14 rounded-full bg-emerald-500/15 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                              <CheckCircle className="w-6 h-6" />
+                            </motion.div>
+                          )}
+                          {verificationStatus === 'failed' && (
+                            <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-14 h-14 rounded-full bg-rose-500/15 border-2 border-rose-400 flex items-center justify-center text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.3)]">
+                              <XCircle className="w-6 h-6" />
+                            </motion.div>
+                          )}
+                        </motion.div>
+                        <h4 className="text-sm font-bold text-white mb-1 uppercase tracking-wide glow-cyan font-display">{verificationStatus === 'scanning' ? 'Verifying Identity' : verificationStatus === 'success' ? 'Access Granted' : 'Access Denied'}</h4>
+                        <p className="text-[10px] text-slate-400 max-w-[200px] leading-relaxed">{verificationStatus === 'scanning' ? 'Matching topological face mesh coordinates...' : verificationStatus === 'success' ? 'Biometric match success. Decrypting vault...' : 'Face ID mismatch or liveness check failed.'}</p>
+                      </div>
+                    )}
+
+                    {streamActive && <div className="laser-line" />}
+                    {streamActive && (
+                      <div className="absolute inset-6 border border-cyan-500/20 rounded-xl pointer-events-none">
+                        <div className="absolute -top-1.5 -left-1.5 w-4 h-4 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-sm" />
+                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-sm" />
+                        <div className="absolute -bottom-1.5 -left-1.5 w-4 h-4 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-sm" />
+                        <div className="absolute -bottom-1.5 -right-1.5 w-4 h-4 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-sm" />
+                        
+                        <div className="absolute top-1.5 left-1.5 text-[7px] font-mono text-cyan-400 bg-cyan-950/60 px-1 rounded border border-cyan-500/30">SYS.REC.ACTIVE</div>
+                        <div className="absolute top-1.5 right-1.5 text-[7px] font-mono text-purple-400 bg-purple-950/60 px-1 rounded border border-purple-500/30">FPS: 30 / HD</div>
+                        <div className="absolute bottom-1.5 right-1.5 text-[7px] font-mono text-cyan-400 bg-cyan-950/60 px-1 rounded border border-cyan-500/30">LIVENESS: {(liveEar * 100).toFixed(0)}%</div>
+                      </div>
+                    )}
+
+                    {streamActive && !isProcessing && (
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+                        <div className="w-36 h-36 rounded-full border border-cyan-400/10 flex items-center justify-center animate-pulse">
+                          <div className="w-28 h-28 rounded-full border border-dashed border-cyan-400/20 flex items-center justify-center animate-[spin_20s_linear_infinite]">
+                            <ScanFace className="w-8 h-8 text-cyan-400/30" />
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Camera Control Action buttons */}
-                    <div className="pt-4">
-                      <button 
-                        onClick={streamActive ? stopCamera : startCamera}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold text-sm tracking-wider uppercase transition-all duration-300 hover:opacity-90 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
-                      >
-                        <ScanFace className="w-5 h-5" />
-                        <span>{streamActive ? 'Terminate Session' : activeMode === 'register' ? 'Register Biometrics' : 'Initiate Scan'}</span>
-                      </button>
+                    {!streamActive && (
+                      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                        <div className="relative w-24 h-24 flex items-center justify-center mb-3">
+                          <div className="absolute inset-0 rounded-full border border-cyan-500/10" />
+                          <div className="radar-sweep" />
+                          <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 z-10">
+                            <ScanFace className="w-6 h-6" />
+                          </div>
+                        </div>
+                        <h3 className="text-sm font-bold text-white mb-0.5 glitch-text font-display" data-text="SCANNER OFFLINE">SCANNER OFFLINE</h3>
+                        <p className="text-[10px] text-slate-400 max-w-[200px]">Initiate biometric feed stream to start physiological liveness validation.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3D Hologram face wireframe pedestal */}
+                  <div className="my-3 border border-white/5 bg-slate-950/45 rounded-2xl relative holo-pedestal flex flex-col items-center p-1">
+                    <div className="absolute top-2 left-3 text-[7px] font-mono text-cyan-400/60 uppercase tracking-widest font-bold">3D_FACE_MESH_SCAN</div>
+                    <FaceMesh3D status={verificationStatus || (streamActive ? 'scanning' : 'idle')} scanning={streamActive} />
+                  </div>
+
+                  {/* Diagnostics status layout */}
+                  <div className="grid grid-cols-2 gap-4 bg-white/5 border border-white/5 rounded-xl p-3 text-[10px]">
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="18" cy="18" r="15" className="stroke-white/10" strokeWidth="2.5" fill="transparent" />
+                          <circle cx="18" cy="18" r="15" className="stroke-cyan-400 transition-all duration-300" strokeWidth="2.5" fill="transparent" strokeDasharray="94.2" strokeDashoffset={94.2 - (blinkProgress / 100) * 94.2} />
+                        </svg>
+                        <div className="absolute text-[7px] font-bold text-cyan-400">EAR</div>
+                      </div>
+                      <div>
+                        <p className="font-bold text-white uppercase tracking-wider text-[9px]">LIVENESS STATS</p>
+                        <p className="text-[9px] text-slate-400 mt-0.5">EAR: <span className="font-mono text-cyan-400 font-bold">{liveEar.toFixed(3)}</span></p>
+                      </div>
+                    </div>
+                    <div className="text-right flex flex-col justify-center">
+                      <span className="text-slate-400">Alignment: <span className={`font-bold ${alignmentStatus === 'Perfect' ? 'text-emerald-400 animate-pulse' : alignmentStatus === 'No Face' ? 'text-slate-500' : 'text-yellow-400'}`}>{alignmentStatus}</span></span>
+                      <span className="text-slate-400 mt-0.5">Blinks captured: <span className={`font-bold ${blinkSuccess ? 'text-emerald-400' : 'text-rose-400'}`}>{blinkCount}/1</span></span>
                     </div>
                   </div>
-                </div>
 
-                {/* Micro metrics card */}
-                <div className="mt-8 border-t border-white/5 pt-6 grid grid-cols-3 gap-2 text-center">
-                  <motion.div 
-                    whileHover={{ scale: 1.08, borderColor: 'rgba(6, 182, 212, 0.4)' }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="px-2 py-3 rounded-xl bg-white/5 border border-white/5 cursor-default"
-                  >
-                    <p className="text-xl font-bold text-white">{stats.logins}</p>
-                    <p className="text-[8px] font-semibold text-slate-400 uppercase">Logins</p>
-                  </motion.div>
-                  <motion.div 
-                    whileHover={{ scale: 1.08, borderColor: 'rgba(6, 182, 212, 0.4)' }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="px-2 py-3 rounded-xl bg-white/5 border border-white/5 cursor-default"
-                  >
-                    <p className="text-xl font-bold text-white">{stats.registered}</p>
-                    <p className="text-[8px] font-semibold text-slate-400 uppercase">Registered</p>
-                  </motion.div>
-                  <motion.div 
-                    whileHover={{ scale: 1.08, borderColor: 'rgba(16, 185, 129, 0.5)' }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="px-2 py-3 rounded-xl bg-white/5 border border-white/5 cursor-default"
-                  >
-                    <p className="text-xl font-bold text-emerald-400 glow-emerald">100%</p>
-                    <p className="text-[8px] font-semibold text-slate-400 uppercase">Accuracy</p>
-                  </motion.div>
-                </div>
-              </motion.div>
-            ) : (
-              
-              /* SaaS Dashboard Panel welcome screens */
-              <motion.div 
-                key="dashboard"
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                className="glass-panel rounded-3xl p-6 flex flex-col justify-between h-full min-h-[460px]"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-6">
+                  {/* Status Indicator Banner */}
+                  <div className="mt-4">
+                    <div className={`py-3 px-4 rounded-xl border text-center font-black tracking-widest font-display text-xs transition-all ${
+                      verificationStatus === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-emerald-glow' :
+                      verificationStatus === 'failed' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 shadow-rose-glow' :
+                      isLoggedIn ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 shadow-cyan-glow' :
+                      'bg-[#0a0d1a]/85 border-white/5 text-slate-500'
+                    }`}>
+                      {verificationStatus === 'success' ? 'ACCESS GRANTED | LEVEL 5' :
+                       verificationStatus === 'failed' ? 'ACCESS DENIED | LOCKOUT' :
+                       isLoggedIn ? 'SYSTEM UNLOCKED | SECURE' : 'SYSTEM STANDBY | ENCRYPTED'}
+                    </div>
+                  </div>
+                </motion.div>
+              </section>
+
+              {/* Right Column content */}
+              <section className="lg:col-span-7 flex flex-col gap-6">
+                
+                {/* Switch Login/Register if logged out, or show stats dashboard if logged in */}
+                {!isLoggedIn ? (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="tech-panel rounded-3xl p-6 flex flex-col justify-between h-full min-h-[460px]">
                     <div>
-                      <motion.h3 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <GradientText
-                          colors={["#06B6D4", "#8B5CF6", "#06B6D4"]}
-                          animationSpeed={5}
-                          showBorder={false}
-                          className="text-xl font-bold tracking-wide cursor-default font-display"
+                      <h2 className="text-base font-bold text-white mb-2 tracking-wide font-display uppercase">SECURE ACCESS PORTAL</h2>
+                      <p className="text-xs text-slate-400 mb-6">Choose biometric operation to start live scan authorization.</p>
+
+                      <div className="grid grid-cols-2 gap-4 mb-8">
+                        <motion.button 
+                          whileHover={{ scale: 1.03, boxShadow: '0 0 20px rgba(6, 182, 212, 0.25)' }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => { stopCamera(); setActiveMode('login'); }}
+                          className={`py-4 px-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-300 ${
+                            activeMode === 'login' 
+                            ? 'border-cyan-400/50 bg-cyan-500/10 text-white shadow-cyan-glow' 
+                            : 'border-white/5 bg-white/5 text-slate-400 hover:text-white'
+                          }`}
                         >
-                          Welcome back, {loggedInUser}!
-                        </GradientText>
-                      </motion.h3>
-
-
-                      <p className="text-xs text-slate-400">Security Clearance Level: Standard</p>
-                    </div>
-                    <button 
-                      onClick={logout}
-                      className="p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-rose-500 transition-all duration-300"
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* AI Proactive Security Audit Banner */}
-                  {(() => {
-                    const audit = checkSecurityStatus();
-                    return (
-                      <motion.div 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className={`mb-5 px-4 py-3 rounded-xl border flex items-center gap-2.5 text-xs transition-all ${
-                          audit.status === 'warning'
-                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-300 animate-pulse'
-                            : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-300'
-                        }`}
-                      >
-                        <div className={`w-2 h-2 rounded-full shrink-0 ${
-                          audit.status === 'warning' ? 'bg-rose-400' : 'bg-emerald-400 animate-pulse'
-                        }`} />
-                        <span className="flex-grow">{audit.message}</span>
-                      </motion.div>
-                    );
-                  })()}
-
-                  {/* Real-Time Threat Pulse Indicator */}
-                  {isLoggedIn && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15 }}
-                      className="mb-5 p-4 rounded-xl border border-white/5 bg-white/[0.01] flex items-center gap-4"
-                    >
-                      <div className={`threat-pulse w-12 h-12 shrink-0 ${
-                        (() => {
-                          const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
-                          return failures.length >= 3 ? 'threat-high' : failures.length >= 1 ? 'threat-medium' : 'threat-low';
-                        })()
-                      }`}>
-                        <div className="threat-ring" style={{ border: `2px solid var(--threat-color)` }} />
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center z-10" style={{ background: 'var(--threat-color)', opacity: 0.15 }}>
-                          <Shield className="w-4 h-4" style={{ color: 'var(--threat-color)' }} />
-                        </div>
+                          <Unlock className="w-5 h-5 text-cyan-400" />
+                          <span className="text-xs font-bold font-display uppercase">Biometric Login</span>
+                        </motion.button>
+                        <motion.button 
+                          whileHover={{ scale: 1.03, boxShadow: '0 0 20px rgba(6, 182, 212, 0.25)' }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => { stopCamera(); setActiveMode('register'); }}
+                          className={`py-4 px-3 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all duration-300 ${
+                            activeMode === 'register' 
+                            ? 'border-cyan-400/50 bg-cyan-500/10 text-white shadow-cyan-glow' 
+                            : 'border-white/5 bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          <UserPlus className="w-5 h-5 text-purple-400" />
+                          <span className="text-xs font-bold font-display uppercase">Register Profile</span>
+                        </motion.button>
                       </div>
-                      <div className="flex-grow">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Threat Level</span>
-                          <span className={`text-[10px] font-black uppercase tracking-wider ${
-                            (() => {
-                              const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
-                              return failures.length >= 3 ? 'text-rose-400' : failures.length >= 1 ? 'text-amber-400' : 'text-emerald-400';
-                            })()
-                          }`}>
-                            {(() => {
-                              const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
-                              return failures.length >= 3 ? 'HIGH' : failures.length >= 1 ? 'MEDIUM' : 'LOW';
-                            })()}
-                          </span>
-                        </div>
-                        <div className="mt-1.5 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: (() => {
-                              const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
-                              return failures.length >= 3 ? '100%' : failures.length >= 1 ? '50%' : '15%';
-                            })() }}
-                            transition={{ duration: 1.5, ease: 'easeOut' }}
-                            className={`h-full rounded-full ${
-                              (() => {
-                                const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
-                                return failures.length >= 3 ? 'bg-rose-500' : failures.length >= 1 ? 'bg-amber-500' : 'bg-emerald-500';
-                              })()
-                            }`}
-                          />
-                        </div>
-                        <p className="text-[9px] text-slate-500 mt-1">
-                          {(() => {
-                            const failures = logs.filter(l => l.event.includes('Denied') || l.event.includes('Rejected') || l.confidence < 50);
-                            return failures.length >= 3 
-                              ? `${failures.length} unauthorized attempts detected — recommend immediate audit`
-                              : failures.length >= 1 
-                              ? `${failures.length} minor anomaly — monitor ongoing activity`
-                              : 'All systems nominal — zero anomalies detected';
-                          })()}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
 
-                  {/* AI Engine & RAM Optimizer Card */}
-                  {isLoggedIn && (
-                    <div className="mb-5 p-4 rounded-xl border border-white/5 bg-white/[0.01] flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <BrainCircuit className="w-3.5 h-3.5 text-cyan-400" />
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            {aiCoreStatus.threads === 0 ? "AI Core (Cloud Engine)" : "AI Engine & RAM Optimizer"}
-                          </span>
-                        </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
-                          aiCoreStatus.loaded 
-                            ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400 animate-pulse' 
-                            : 'bg-white/5 border-white/10 text-slate-400'
-                        }`}>
-                          {aiCoreStatus.loaded 
-                            ? (aiCoreStatus.threads === 0 ? 'ACTIVE / CLOUD' : 'ACTIVE / LOADED') 
-                            : 'STANDBY / IDLE'}
-                        </span>
-                      </div>
-                      
-                      {aiCoreStatus.threads === 0 ? (
-                        /* Cloud Gemini API Mode view */
-                        <>
-                          <div className="grid grid-cols-2 gap-2 text-[10px]">
-                            <div className="space-y-0.5">
-                              <span className="text-slate-400">Connection: </span>
-                              <span className="font-bold text-emerald-400">Gemini 2.5 Flash API</span>
-                            </div>
-                            <div className="space-y-0.5 text-right">
-                              <span className="text-slate-400">Platform: </span>
-                              <span className="font-bold text-white">Google TPU/GPU Cloud</span>
-                            </div>
+                      <div className="space-y-4">
+                        {activeMode === 'register' && (
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Enter Full Name</label>
+                            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="e.g., Alexia Volkov" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-all duration-300" />
                           </div>
-
-                          <div className="text-[10px] bg-cyan-500/5 border border-cyan-500/10 px-3 py-1.5 rounded-lg flex justify-between items-center text-cyan-200">
-                            <span>Resource Optimization:</span>
-                            <span className="font-bold uppercase text-emerald-400">1.2 GB Server RAM Freed</span>
-                          </div>
-
-                          <div className="text-[10px] text-center text-slate-500 italic py-1 border-t border-white/5">
-                            Always Online — Zero Latency Cloud Inference
-                          </div>
-                        </>
-                      ) : (
-                        /* Local Llama GGUF Mode view */
-                        <>
-                          <div className="grid grid-cols-2 gap-2 text-[10px]">
-                            <div className="space-y-0.5">
-                              <span className="text-slate-400">RAM Status: </span>
-                              <span className="font-bold text-white">
-                                {aiCoreStatus.loaded ? '1.5 GB Allocated (8.0 GB Permitted)' : '0.0 GB (8.0 GB Permitted)'}
-                              </span>
-                            </div>
-                            <div className="space-y-0.5 text-right">
-                              <span className="text-slate-400">Execution Limit: </span>
-                              <span className="font-bold text-white">{aiCoreStatus.threads} Threads / 85% GPU (No Limits)</span>
-                            </div>
-                          </div>
-
-                          {aiCoreStatus.loaded && (
-                            <div className="text-[10px] bg-cyan-500/5 border border-cyan-500/10 px-3 py-1.5 rounded-lg flex justify-between items-center text-cyan-200">
-                              <span>Automatic Auto-Unload:</span>
-                              <span className="font-mono font-bold uppercase">
-                                {aiCoreStatus.persistent ? 'Disabled (Persistent Mode)' : (() => {
-                                  const s = aiCoreStatus.idle_time_remaining_seconds;
-                                  const min = Math.floor(s / 60);
-                                  const sec = Math.floor(s % 60);
-                                  return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-                                })()}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            {aiCoreStatus.loaded ? (
-                              <button
-                                onClick={unloadLLM}
-                                disabled={isControllingLLM}
-                                className="flex-grow py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/25 hover:bg-rose-500/25 text-rose-300 text-[10px] font-bold transition-all disabled:opacity-50"
-                              >
-                                {isControllingLLM ? 'Reclaiming...' : 'Purge LLM from RAM'}
-                              </button>
-                            ) : (
-                              <button
-                                onClick={preloadLLM}
-                                disabled={isControllingLLM}
-                                className="flex-grow py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 hover:bg-cyan-500/25 text-cyan-300 text-[10px] font-bold transition-all disabled:opacity-50"
-                              >
-                                {isControllingLLM ? 'Preloading...' : 'Pre-warm AI Core'}
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-
-                  {/* AI Security Score Circular Gauge Widget */}
-                  {isLoggedIn && (
-                    <div className="mb-6 p-5 rounded-2xl border border-white/5 bg-white/[0.01] flex flex-col sm:flex-row items-center gap-6">
-                      {/* Circular Progress Gauge */}
-                      <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
-                        {loadingScore ? (
-                          <div className="w-10 h-10 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin" />
-                        ) : (
-                          <>
-                            <svg className="w-full h-full transform -rotate-90">
-                              <circle cx="48" cy="48" r="40" className="stroke-white/5" strokeWidth="6" fill="transparent" />
-                              <circle 
-                                cx="48" 
-                                cy="48" 
-                                r="40" 
-                                className={`transition-all duration-1000 ${
-                                  securityScore !== null && securityScore >= 80 
-                                    ? 'stroke-emerald-400' 
-                                    : securityScore !== null && securityScore >= 50 
-                                    ? 'stroke-yellow-400' 
-                                    : 'stroke-rose-500'
-                                }`} 
-                                strokeWidth="6" 
-                                fill="transparent" 
-                                strokeDasharray="251.2" 
-                                strokeDashoffset={securityScore !== null ? 251.2 - (securityScore / 100) * 251.2 : 251.2} 
-                              />
-                            </svg>
-                            <div className="absolute flex flex-col items-center justify-center">
-                              <span className="text-xl font-black text-white font-display">{securityScore !== null ? securityScore : 'N/A'}</span>
-                              <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest font-display">Quality</span>
-                            </div>
-                          </>
                         )}
-                      </div>
-                      
-                      {/* Recommendations List */}
-                      <div className="flex-grow space-y-2 w-full text-left">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Biometric Health & Security Audit</span>
 
-                          <button 
-                            onClick={fetchSecurityScore}
-                            disabled={loadingScore}
-                            className="text-[9px] font-bold text-cyan-400 hover:underline disabled:opacity-50"
-                          >
-                            Refresh
+                        <div className="pt-4">
+                          <button onClick={streamActive ? stopCamera : startCamera} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold text-sm tracking-widest uppercase transition-all duration-300 hover:opacity-90 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2">
+                            <ScanFace className="w-5 h-5" />
+                            <span>{streamActive ? 'Terminate Feed Stream' : activeMode === 'register' ? 'Initialize Enrollment' : 'Initiate Scanner Scan'}</span>
                           </button>
                         </div>
-                        {securityScoreTips.length > 0 ? (
-                          <ul className="space-y-1 list-disc pl-4 text-xs text-slate-300">
-                            {securityScoreTips.map((tip, idx) => (
-                              <li key={idx} className="leading-relaxed">{tip}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-xs text-slate-500 italic">No recommendations yet. Refresh to trigger AI system audit.</p>
-                        )}
                       </div>
                     </div>
-                  )}
 
-                  {/* Immutable Logs History */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide">Immutable System Logs</h4>
-                      <button 
-                        onClick={analyzeLogs}
-                        disabled={isAnalyzing}
-                        className="text-[10px] font-bold text-cyan-400 hover:text-white transition-colors bg-cyan-400/10 px-3 py-1.5 rounded-full border border-cyan-400/30 flex items-center gap-1.5 disabled:opacity-50"
-                      >
-                        {isAnalyzing ? (
-                          <div className="w-3 h-3 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
-                        ) : (
-                          <BrainCircuit className="w-3.5 h-3.5" />
-                        )}
-                        AI Analysis
-                      </button>
-                    </div>
-
-                    {/* Natural Language Log Search Bar */}
-                    <form onSubmit={runLogSearch} className="flex gap-2 w-full bg-white/[0.02] border border-white/5 p-2 rounded-xl">
-                      <input
-                        value={logSearchQuery}
-                        onChange={(e) => setLogSearchQuery(e.target.value)}
-                        placeholder="Search logs with AI (e.g. 'show Jerome Prince success logins')..."
-                        className="flex-grow bg-transparent border-0 outline-none text-xs text-white px-2 py-1 placeholder:text-slate-500 focus:ring-0 focus:outline-none"
-                      />
-                      {activeLogFilter && (
-                        <button 
-                          type="button"
-                          onClick={clearLogFilter}
-                          className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:text-white text-[10px] font-bold transition-all"
-                        >
-                          Clear
-                        </button>
-                      )}
-                      <button 
-                        type="submit"
-                        disabled={isSearchingLogs}
-                        className="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:text-white text-[10px] font-bold transition-all disabled:opacity-50"
-                      >
-                        {isSearchingLogs ? 'Searching...' : 'Ask AI'}
-                      </button>
-                    </form>
-                    
-                    {llmAnalysis && (
-                      <div className="bg-white/[0.03] border border-cyan-400/20 rounded-xl p-4 text-xs text-slate-300 mb-2 leading-relaxed shadow-inner shadow-cyan-500/5 flex flex-col gap-1.5">
-                        {renderMarkdown(llmAnalysis)}
+                    <div className="mt-8 border-t border-white/5 pt-6 grid grid-cols-3 gap-2 text-center text-[10px]">
+                      <div className="px-2 py-3 rounded-xl bg-white/5 border border-white/5 cursor-default hover:border-white/10 transition-colors">
+                        <p className="text-lg font-bold text-white">{stats.logins}</p>
+                        <p className="text-[8px] font-semibold text-slate-400 uppercase">Total Logins</p>
                       </div>
-                    )}
-                    <div className="max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
-                      <div className="timeline-container">
-                        {logs
-                          .filter(log => {
-                            if (!activeLogFilter) return true;
-                            if (activeLogFilter.clientSideQuery) {
-                              const q = activeLogFilter.clientSideQuery;
-                              const stopWords = ['show', 'me', 'find', 'log', 'logs', 'login', 'logins', 'attempt', 'attempts', 'user', 'users', 'view', 'get', 'display', 'search', 'for', 'the', 'with', 'a', 'an', 'of'];
-                              const words = q.split(/\s+/).filter(w => w.length > 0 && !stopWords.includes(w));
-                              if (words.length === 0) return true;
-                              return words.every(word => {
-                                if (['success', 'verified', 'unlocked', 'stored', 'enrolled', 'granted'].includes(word)) {
-                                  return log.event.toLowerCase().includes('verified') || 
-                                         log.event.toLowerCase().includes('success') || 
-                                         log.event.toLowerCase().includes('unlocked') || 
-                                         log.event.toLowerCase().includes('stored') || 
-                                         log.event.toLowerCase().includes('enrolled') || 
-                                         log.event.toLowerCase().includes('granted');
-                                }
-                                if (['fail', 'failed', 'denied', 'rejected', 'unauthorized'].includes(word)) {
-                                  return log.event.toLowerCase().includes('denied') || 
-                                         log.event.toLowerCase().includes('rejected') || 
-                                         log.event.toLowerCase().includes('failed') || 
-                                         log.event.toLowerCase().includes('failure');
-                                }
-                                return log.name.toLowerCase().includes(word) || log.event.toLowerCase().includes(word);
-                              });
-                            }
-                            let match = true;
-                            const isValidFilterVal = (val) => {
-                              if (val === undefined || val === null) return false;
-                              const s = String(val).trim().toLowerCase();
-                              return s !== '' && s !== '*' && s !== 'all' && s !== 'none' && s !== 'null' && s !== 'undefined';
-                            };
-
-                            if (isValidFilterVal(activeLogFilter.name)) {
-                              const filterName = activeLogFilter.name.toLowerCase();
-                              const logName = log.name.toLowerCase();
-                              if (!logName.includes(filterName) && !filterName.includes(logName)) {
-                                match = false;
-                              }
-                            }
-                            if (isValidFilterVal(activeLogFilter.event) && !log.event.toLowerCase().includes(activeLogFilter.event.toLowerCase())) {
-                              match = false;
-                            }
-                            if (activeLogFilter.success !== undefined && activeLogFilter.success !== null) {
-                              const logSuccess = log.event.includes('Verified') || log.event.includes('Success') || log.event.includes('Unlocked') || log.event.includes('Stored') || log.event.includes('Enrolled');
-                              if (logSuccess !== activeLogFilter.success) {
-                                match = false;
-                              }
-                            }
-                            return match;
-                          })
-                          .map((log, idx) => {
+                      <div className="px-2 py-3 rounded-xl bg-white/5 border border-white/5 cursor-default hover:border-white/10 transition-colors">
+                        <p className="text-lg font-bold text-white">{stats.registered}</p>
+                        <p className="text-[8px] font-semibold text-slate-400 uppercase">Users Registered</p>
+                      </div>
+                      <div className="px-2 py-3 rounded-xl bg-white/5 border border-white/5 cursor-default hover:border-emerald-500/20 transition-colors">
+                        <p className="text-lg font-bold text-emerald-400 glow-emerald">100%</p>
+                        <p className="text-[8px] font-semibold text-slate-400 uppercase">Target Accuracy</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <>
+                    {/* Logged in upper grid cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                      
+                      {/* Logs Timeline card */}
+                      <div className="md:col-span-7 tech-panel rounded-3xl p-5 flex flex-col max-h-[250px]">
+                        <div className="flex justify-between items-center mb-3 border-b border-white/5 pb-2">
+                          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">VAULT ACCESS LOGS</h3>
+                          <button onClick={() => setActiveTab('logs')} className="text-[9px] font-bold text-cyan-400 hover:underline">View All</button>
+                        </div>
+                        <div className="flex-grow overflow-y-auto scroll-dark pr-1 space-y-2">
+                          {logs.slice(0, 4).map((log, idx) => {
                             const isSuccess = log.event.includes('Verified') || log.event.includes('Success') || log.event.includes('Unlocked') || log.event.includes('Stored') || log.event.includes('Enrolled');
                             const isFailure = log.event.includes('Denied') || log.event.includes('Rejected') || log.event.includes('Deleted');
-                            const eventClass = isSuccess ? 'event-success' : isFailure ? 'event-failure' : 'event-info';
                             return (
-                              <motion.div 
-                                key={idx} 
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.03 }}
-                                className={`timeline-node ${eventClass} group`}
-                              >
-                                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-all cursor-default">
-                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                                    isSuccess ? 'bg-emerald-500/10 text-emerald-400' :
-                                    isFailure ? 'bg-rose-500/10 text-rose-400' :
-                                    'bg-cyan-500/10 text-cyan-400'
-                                  }`}>
-                                    {isSuccess ? <CheckCircle className="w-3.5 h-3.5" /> :
-                                     isFailure ? <AlertTriangle className="w-3.5 h-3.5" /> :
-                                     <Activity className="w-3.5 h-3.5" />}
-                                  </div>
-                                  <div className="flex-grow min-w-0">
-                                    <div className="flex items-center justify-between gap-2">
-                                      <span className="text-xs font-bold text-white truncate">{log.name}</span>
-                                      <span className={`text-[10px] font-bold shrink-0 ${log.liveness ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                        {log.confidence}%
-                                      </span>
-                                    </div>
-                                    <p className="text-[10px] text-slate-400 mt-0.5">{log.event}</p>
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                      <Clock className="w-2.5 h-2.5 text-slate-500" />
-                                      <span className="font-mono text-[9px] text-slate-500">{log.timestamp}</span>
-                                    </div>
-                                  </div>
+                              <div key={idx} className="flex items-center justify-between bg-white/[0.02] border border-white/5 p-2 rounded-xl text-[10px]">
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-emerald-400' : isFailure ? 'bg-rose-400' : 'bg-cyan-400 animate-pulse'}`} />
+                                  <span className="font-bold text-white truncate max-w-[80px]">{log.name}</span>
+                                  <span className="text-slate-400 truncate max-w-[100px]">{log.event}</span>
                                 </div>
-                              </motion.div>
+                                <span className="font-mono text-slate-500 text-[8px]">{log.timestamp.split(' ')[1] || log.timestamp}</span>
+                              </div>
                             );
                           })}
+                        </div>
+                      </div>
+
+                      {/* Line Chart Analytics widget */}
+                      <div className="md:col-span-5 tech-panel rounded-3xl p-5 flex flex-col justify-between max-h-[250px]">
+                        <div className="border-b border-white/5 pb-2">
+                          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">BEHAVIORAL ANALYTICS</h3>
+                          <p className="text-[8px] text-slate-400 mt-0.5">Risk Score Vector: <span className="font-bold text-emerald-400">LOW 0.3%</span></p>
+                        </div>
+                        <div className="my-2">
+                          <WaveChart />
+                        </div>
+                        <div className="flex justify-between text-[7px] font-mono text-slate-500 uppercase tracking-wider">
+                          <span>01</span><span>03</span><span>05</span><span>07</span><span>09</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Middle grid cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                      
+                      {/* SVG Dotted Tactical World Map */}
+                      <div className="md:col-span-7 tech-panel rounded-3xl p-5 flex flex-col justify-between">
+                        <div className="border-b border-white/5 pb-2 mb-2 flex justify-between items-center">
+                          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">SECURITY OVERVIEW</h3>
+                          <span className="text-[8px] font-mono text-emerald-400 bg-emerald-950/40 px-1 border border-emerald-500/20 rounded">ZONES SECURE</span>
+                        </div>
+                        <TacticalMap />
+                      </div>
+
+                      {/* System status dashboard items */}
+                      <div className="md:col-span-5 tech-panel rounded-3xl p-5 flex flex-col justify-between min-h-[190px]">
+                        <div className="border-b border-white/5 pb-2 mb-2">
+                          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">SYSTEM STATUS</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
+                          <div className="p-2 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-cyan-500/30 transition-all" onClick={() => setActiveTab('settings')}>
+                            <Zap className="w-4 h-4 text-cyan-400 mb-1" />
+                            <span className="font-semibold text-white">Biometric Sync</span>
+                            <span className="text-[7px] text-slate-500 uppercase mt-0.5">ACTIVE</span>
+                          </div>
+                          <div className="p-2 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-cyan-500/30 transition-all" onClick={() => setActiveTab('logs')}>
+                            <Database className="w-4 h-4 text-cyan-400 mb-1" />
+                            <span className="font-semibold text-white">Database</span>
+                            <span className="text-[7px] text-slate-500 uppercase mt-0.5">{stats.logins} ENTRIES</span>
+                          </div>
+                          <div className="p-2 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/30 transition-all" onClick={() => { unlockVault(); setActiveTab('vault'); }}>
+                            <KeyRound className="w-4 h-4 text-emerald-400 mb-1" />
+                            <span className="font-semibold text-white">Key Vault</span>
+                            <span className="text-[7px] text-slate-500 uppercase mt-0.5">{vaultSecrets.length} SECRETS</span>
+                          </div>
+                          <div className="p-2 bg-white/5 border border-white/5 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-cyan-500/30 transition-all" onClick={streamActive ? stopCamera : startCamera}>
+                            <ScanFace className={`w-4 h-4 mb-1 ${streamActive ? 'text-emerald-400 animate-pulse' : 'text-slate-400'}`} />
+                            <span className="font-semibold text-white">{streamActive ? 'Scanner On' : 'Scanner Off'}</span>
+                            <span className="text-[7px] text-slate-500 uppercase mt-0.5">{streamActive ? 'DISCONNECT' : 'CONNECT'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feature integration grids */}
+                    <div className="tech-panel rounded-3xl p-5">
+                      <div className="border-b border-white/5 pb-2 mb-4">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">FEATURE INTEGRATION</h3>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left text-[10px]">
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">SECURITY PROTOCOLS</p>
+                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Level Management</span></button>
+                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>2FA Sync</span></button>
+                        </div>
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">EVENT RESPONSE</p>
+                          <button onClick={analyzeLogs} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Threat Detection</span></button>
+                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Manual Override</span></button>
+                        </div>
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">BIOMETRIC SETTINGS</p>
+                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Face Templates</span></button>
+                          <button onClick={() => { if(!isLoggedIn) { stopCamera(); setActiveMode('register'); startCamera(); } }} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Enrollment</span></button>
+                        </div>
+                        <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 cursor-default">
+                          <p className="font-bold text-slate-400 uppercase tracking-wider text-[8px] font-mono">SYSTEM ALERTS</p>
+                          <button onClick={() => setActiveTab('logs')} className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Recent Activity</span></button>
+                          <button className="w-full text-left font-bold text-white hover:text-cyan-400 flex items-center gap-1 transition-colors"><span>Notifications</span></button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </section>
+            </div>
+          ) : activeTab === 'vault' ? (
+            /* Volatile decrypted vault container page */
+            <div className="max-w-4xl mx-auto tech-panel rounded-3xl p-6 shadow-emerald-glow">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <KeyRound className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <h2 className="text-base font-bold text-white tracking-wide font-display">AES-256-GCM DECRYPTED VOLATILE VAULT</h2>
+                    <p className="text-[10px] text-slate-400 font-mono">ENCRYPTION ENGINE PROTOCOL ACCREDITATION: SYMMETRIC_CYPHERPOOL</p>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab('dashboard')} className="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-bold transition-all border border-white/5">Dashboard Hub</button>
+              </div>
+
+              {!isLoggedIn ? (
+                <div className="text-center py-12">
+                  <Lock className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <p className="text-sm font-semibold text-white">Security Credentials Required</p>
+                  <p className="text-xs text-slate-500 mt-1">Biometric gateway validation signature matches must verify first.</p>
+                </div>
+              ) : !vaultUnlocked ? (
+                <div className="text-center py-12 flex flex-col items-center justify-center">
+                  <Lock className="w-12 h-12 text-slate-600 mb-4 animate-pulse" />
+                  <p className="text-sm font-semibold text-white">Credentials Blocked / Locked</p>
+                  <p className="text-xs text-slate-400 mt-1 mb-6 max-w-sm">Vault memory decryptions require blink liveness confirmation parameters.</p>
+                  <button onClick={unlockVault} disabled={vaultLoading} className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2 disabled:opacity-50">
+                    {vaultLoading ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Unlock className="w-3.5 h-3.5" />}
+                    <span>Biometric Authorization Lockout Challenge</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center bg-emerald-500/5 border border-emerald-500/10 p-3.5 rounded-xl text-[10px]">
+                    <div>
+                      <span className="text-slate-400">Decryption Matrix Status: </span>
+                      <span className="font-bold text-emerald-400 glow-emerald uppercase">Active in Server Volatile Memory Pools</span>
+                    </div>
+                    {clipboardTTL > 0 && (
+                      <span className="ttl-badge">
+                        <Timer className="w-3 h-3" />
+                        Clipboard Clear: {clipboardTTL}s
+                      </span>
+                    )}
                   </div>
 
-                  {/* ══════ Encrypted Key-Store Vault ══════ */}
-                  <div className={`mt-6 p-5 rounded-2xl border ${vaultUnlocked ? 'vault-unlocked' : 'vault-locked'} bg-white/[0.02]`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <KeyRound className={`w-4 h-4 ${vaultUnlocked ? 'text-emerald-400' : 'text-slate-400'}`} />
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide">Encrypted Key-Store</h4>
-                        {vaultUnlocked && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">LIVE</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {clipboardTTL > 0 && (
-                          <span className="ttl-badge">
-                            <Timer className="w-3 h-3" />
-                            {clipboardTTL}s
-                          </span>
-                        )}
-                        {vaultUnlocked ? (
-                          <button onClick={purgeVault} className="p-1.5 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-rose-400 transition-all" title="Lock Vault">
-                            <Lock className="w-4 h-4" />
-                          </button>
-                        ) : (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={unlockVault}
-                            disabled={vaultLoading}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/20 text-xs font-bold text-cyan-400 hover:text-white transition-all disabled:opacity-50"
-                          >
-                            {vaultLoading ? (
-                              <div className="w-3 h-3 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
-                            ) : (
-                              <Unlock className="w-3 h-3" />
-                            )}
-                            Unlock
-                          </motion.button>
-                        )}
-                      </div>
-                    </div>
-
-                    {!vaultUnlocked ? (
-                      <div className="text-center py-6">
-                        <Lock className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                        <p className="text-xs text-slate-500">Vault is locked. Biometric challenge required to decrypt secrets.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* Left Column: Secrets Timeline */}
+                    <div className="md:col-span-6 space-y-3">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">STORED KEYS</h3>
+                      <div className="max-h-80 overflow-y-auto pr-1 scroll-dark space-y-2.5">
                         {vaultSecrets.length === 0 && !showAddSecret && (
-                          <p className="text-xs text-slate-500 text-center py-4">No secrets stored yet. Add your first secret below.</p>
+                          <p className="text-xs text-slate-500 italic text-center py-8">Vault register database empty.</p>
                         )}
-
                         {vaultSecrets.map((secret) => (
                           <div key={secret.id} className="secret-row">
                             <div className="flex-1 min-w-0">
@@ -1830,320 +1486,390 @@ function App() {
                               </p>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
-                              <button onClick={() => toggleReveal(secret.id)} className="p-1.5 rounded-md bg-white/5 text-slate-400 hover:text-cyan-400 transition-colors" title={revealedIds.has(secret.id) ? 'Hide' : 'Reveal'}>
+                              <button onClick={() => toggleReveal(secret.id)} className="p-1.5 rounded-md bg-white/5 text-slate-400 hover:text-cyan-400 transition-colors">
                                 {revealedIds.has(secret.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                               </button>
-                              <button onClick={() => copyToClipboard(secret.value)} className="p-1.5 rounded-md bg-white/5 text-slate-400 hover:text-emerald-400 transition-colors" title="Copy (15s TTL)">
+                              <button onClick={() => copyToClipboard(secret.value)} className="p-1.5 rounded-md bg-white/5 text-slate-400 hover:text-emerald-400 transition-colors">
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={() => deleteSecretById(secret.id)} className="p-1.5 rounded-md bg-white/5 text-slate-400 hover:text-rose-400 transition-colors" title="Delete">
+                              <button onClick={() => deleteSecretById(secret.id)} className="p-1.5 rounded-md bg-white/5 text-slate-400 hover:text-rose-400 transition-colors">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
                         ))}
+                      </div>
+                      {!showAddSecret && (
+                        <button onClick={() => setShowAddSecret(true)} className="w-full py-2.5 rounded-xl border border-dashed border-white/10 text-xs text-slate-400 hover:text-cyan-400 hover:border-cyan-400/30 transition-all flex items-center justify-center gap-1.5">
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add New Volatile Secret</span>
+                        </button>
+                      )}
+                    </div>
 
-                        {showAddSecret ? (
-                          <div className="mt-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-2">
-                            <input
-                              value={newSecretLabel}
-                              onChange={(e) => setNewSecretLabel(e.target.value)}
-                              placeholder="Label (e.g. GitHub Token)"
-                              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all"
-                            />
-                            <div className="flex gap-2">
-                              <input
-                                value={newSecretValue}
-                                onChange={(e) => { setNewSecretValue(e.target.value); setAuditResult(''); }}
-                                placeholder="Secret value (password/key)"
-                                type="password"
-                                className="flex-grow bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all"
-                              />
-                              <button 
-                                onClick={auditPassword}
-                                disabled={isAuditing}
-                                type="button"
-                                className="px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:text-white text-xs font-bold transition-all disabled:opacity-50"
-                              >
-                                {isAuditing ? 'Auditing...' : 'AI Audit'}
-                              </button>
+                    {/* Right Column: Key Addition & AI Generation */}
+                    <div className="md:col-span-6 space-y-4">
+                      {showAddSecret ? (
+                        <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+                          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">ENCRYPT NEW SECRET</h3>
+                          <input value={newSecretLabel} onChange={(e) => setNewSecretLabel(e.target.value)} placeholder="Secret Label (e.g. AWS Token)" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                          
+                          <div className="flex gap-2">
+                            <input value={newSecretValue} onChange={(e) => { setNewSecretValue(e.target.value); setAuditResult(''); }} placeholder="Plaintext secret value" type="password" className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                            <button onClick={auditPassword} disabled={isAuditing} className="px-3 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:text-white text-xs font-bold disabled:opacity-50">
+                              {isAuditing ? 'Auditing...' : 'AI Audit'}
+                            </button>
+                          </div>
+
+                          {newSecretValue && (
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-center text-[9px]">
+                                <span className="text-slate-500">Local Entropy Score:</span>
+                                <span className={`font-bold ${getPasswordStrength(newSecretValue).color}`}>{getPasswordStrength(newSecretValue).text}</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div className={`h-full transition-all duration-500 ${getPasswordStrength(newSecretValue).barColor}`} style={{
+                                  width: `${(() => {
+                                    const r = getPasswordStrength(newSecretValue);
+                                    return r.text === 'Very Weak' ? 20 : r.text === 'Weak' ? 40 : r.text === 'Fair' ? 60 : r.text === 'Good' ? 80 : 100;
+                                  })()}%`
+                                }} />
+                              </div>
                             </div>
+                          )}
 
-                            {/* Client-side Strength Meter */}
-                            {newSecretValue && (
-                              <div className="space-y-1">
-                                <div className="flex justify-between items-center text-[9px]">
-                                  <span className="text-slate-500">Local Strength Check:</span>
-                                  <span className={`font-bold ${(() => {
-                                    const rating = getPasswordStrength(newSecretValue);
-                                    return rating.color;
-                                  })()}`}>
-                                    {(() => {
-                                      const rating = getPasswordStrength(newSecretValue);
-                                      return rating.text;
-                                    })()}
-                                  </span>
+                          {auditResult && (
+                            <div className="text-[10px] bg-white/[0.01] border border-cyan-500/10 p-3 rounded-xl text-slate-300 leading-normal flex flex-col gap-1.5">
+                              <span className="font-bold text-cyan-400 border-b border-white/5 pb-1">AI Audit Report:</span>
+                              <div className="space-y-1 text-slate-400 leading-relaxed font-sans">{renderMarkdown(auditResult)}</div>
+                            </div>
+                          )}
+
+                          <div className="border-t border-white/5 pt-3">
+                            {showPwGenDrawer ? (
+                              <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 space-y-3">
+                                <div className="text-[9px] text-purple-400 font-bold uppercase tracking-wider font-mono">AI Mnemonic Generator</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  <button type="button" onClick={() => setPwGenPrompt('Strong password for a secure web portal')} className="px-2 py-0.5 rounded bg-purple-500/10 hover:bg-purple-500/20 text-[8px] text-purple-300 border border-purple-500/10 transition-all">+ Web Portal</button>
+                                  <button type="button" onClick={() => setPwGenPrompt('High entropy random API credentials')} className="px-2 py-0.5 rounded bg-purple-500/10 hover:bg-purple-500/20 text-[8px] text-purple-300 border border-purple-500/10 transition-all">+ API Token</button>
+                                  <button type="button" onClick={() => setPwGenPrompt('An easy to remember mnemonic pass phrase')} className="px-2 py-0.5 rounded bg-purple-500/10 hover:bg-purple-500/20 text-[8px] text-purple-300 border border-purple-500/10 transition-all">+ Mnemonic</button>
                                 </div>
-                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                  <div 
-                                    className={`h-full transition-all duration-500 ${(() => {
-                                      const rating = getPasswordStrength(newSecretValue);
-                                      return rating.barColor;
-                                    })()}`}
-                                    style={{
-                                      width: `${(() => {
-                                        const rating = getPasswordStrength(newSecretValue);
-                                        const score = rating.text === 'Very Weak' ? 20 :
-                                                      rating.text === 'Weak' ? 40 :
-                                                      rating.text === 'Fair' ? 60 :
-                                                      rating.text === 'Good' ? 80 : 100;
-                                        return score;
-                                      })()}%`
-                                    }}
-                                  />
+                                <div className="flex gap-2">
+                                  <input value={pwGenPrompt} onChange={(e) => setPwGenPrompt(e.target.value)} placeholder="Describe password purpose..." className="flex-grow bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-purple-400" />
+                                  <button onClick={generateMnemonicPassword} disabled={isGeneratingPw} className="px-3 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:text-white text-xs font-bold disabled:opacity-50">Generate</button>
+                                </div>
+                                {pwGenExplanation && <p className="text-[8px] text-slate-500 italic">{pwGenExplanation}</p>}
+                                <button type="button" onClick={() => { setShowPwGenDrawer(false); setPwGenPrompt(''); setPwGenExplanation(''); }} className="text-[8px] text-slate-400 hover:underline">Close Generator</button>
+                              </div>
+                            ) : (
+                              <button type="button" onClick={() => setShowPwGenDrawer(true)} className="text-[9px] text-purple-400 hover:text-purple-300 hover:underline flex items-center gap-1 font-mono">
+                                <BrainCircuit className="w-3 h-3" />
+                                <span>Generate Password with local AI</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="flex gap-2 pt-2">
+                            <button onClick={addSecret} className="flex-grow py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-bold transition-all">Encrypt & Store</button>
+                            <button onClick={() => { setShowAddSecret(false); setNewSecretLabel(''); setNewSecretValue(''); setAuditResult(''); setPwGenPrompt(''); setPwGenExplanation(''); setShowPwGenDrawer(false); }} className="px-4 py-2 rounded-xl bg-white/5 text-slate-400 text-xs hover:text-white transition-all">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-2xl bg-white/[0.01] border border-white/5 h-full flex flex-col items-center justify-center text-center text-slate-500 italic text-[10px] py-12">
+                          <Shield className="w-8 h-8 text-slate-700 mb-2" />
+                          <p>AES cryptographic pools are isolated. Click 'Store New Encrypted Secret' to save credentials into memory banks.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between border-t border-white/5 pt-4">
+                    <button onClick={purgeVault} className="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/25 hover:bg-rose-500/25 text-rose-300 text-xs font-bold transition-all">Lock Vault & Purge RAM</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'logs' ? (
+            /* Audit logs tab component rendering */
+            <div className="max-w-4xl mx-auto tech-panel rounded-3xl p-6 shadow-cyan-glow">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-5 h-5 text-cyan-400" />
+                  <div>
+                    <h2 className="text-base font-bold text-white tracking-wide font-display">VAULT INCIDENT SEARCH NETWORK</h2>
+                    <p className="text-[10px] text-slate-400">Natural language AI filters over the immutable blockchain timeline registry.</p>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab('dashboard')} className="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-bold transition-all border border-white/5">Dashboard Hub</button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Search query form */}
+                <form onSubmit={runLogSearch} className="flex gap-2 w-full bg-white/[0.02] border border-white/5 p-2 rounded-xl">
+                  <input value={logSearchQuery} onChange={(e) => setLogSearchQuery(e.target.value)} placeholder="Search logs with AI (e.g., 'show failure logins')..." className="flex-grow bg-transparent border-0 outline-none text-xs text-white px-2 py-1 placeholder:text-slate-500 focus:ring-0 focus:outline-none" />
+                  {activeLogFilter && <button type="button" onClick={clearLogFilter} className="px-3 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold transition-all">Clear</button>}
+                  <button type="submit" disabled={isSearchingLogs} className="px-4 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:text-white text-xs font-bold disabled:opacity-50">{isSearchingLogs ? 'Searching...' : 'Search with AI'}</button>
+                </form>
+
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">TIMELINE REGISTRY</h3>
+                  <button onClick={analyzeLogs} disabled={isAnalyzing} className="text-[10px] font-bold text-cyan-400 hover:text-white transition-colors bg-cyan-400/10 px-3.5 py-1.5 rounded-full border border-cyan-400/30 flex items-center gap-1.5 disabled:opacity-50">
+                    {isAnalyzing ? <div className="w-3 h-3 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" /> : <BrainCircuit className="w-3.5 h-3.5" />}
+                    <span>AI Analysis Summary</span>
+                  </button>
+                </div>
+
+                {llmAnalysis && (
+                  <div className="bg-white/[0.02] border border-cyan-400/20 rounded-xl p-4 text-xs text-slate-300 mb-2 leading-relaxed shadow-inner">
+                    <span className="font-bold text-cyan-400 block border-b border-white/5 pb-1 mb-2 font-mono uppercase tracking-widest text-[9px]">Audit incident logs summary</span>
+                    <div className="space-y-1.5 text-slate-400 leading-relaxed font-sans">{renderMarkdown(llmAnalysis)}</div>
+                  </div>
+                )}
+
+                {/* Dotted scrolling timeline container */}
+                <div className="max-h-[400px] overflow-y-auto pr-1 scroll-dark">
+                  <div className="timeline-container">
+                    {logs
+                      .filter(log => {
+                        if (!activeLogFilter) return true;
+                        if (activeLogFilter.clientSideQuery) {
+                          const q = activeLogFilter.clientSideQuery;
+                          const stopWords = ['show', 'me', 'find', 'log', 'logs', 'login', 'logins', 'attempt', 'attempts', 'user', 'users', 'view', 'get', 'display', 'search', 'for', 'the', 'with', 'a', 'an', 'of'];
+                          const words = q.split(/\s+/).filter(w => w.length > 0 && !stopWords.includes(w));
+                          if (words.length === 0) return true;
+                          return words.every(word => {
+                            if (['success', 'verified', 'unlocked', 'stored', 'enrolled', 'granted'].includes(word)) {
+                              return log.event.toLowerCase().includes('verified') || log.event.toLowerCase().includes('success') || log.event.toLowerCase().includes('unlocked') || log.event.toLowerCase().includes('stored') || log.event.toLowerCase().includes('enrolled') || log.event.toLowerCase().includes('granted');
+                            }
+                            if (['fail', 'failed', 'denied', 'rejected', 'unauthorized'].includes(word)) {
+                              return log.event.toLowerCase().includes('denied') || log.event.toLowerCase().includes('rejected') || log.event.toLowerCase().includes('failed') || log.event.toLowerCase().includes('failure');
+                            }
+                            return log.name.toLowerCase().includes(word) || log.event.toLowerCase().includes(word);
+                          });
+                        }
+                        let match = true;
+                        const isValidFilterVal = (val) => {
+                          if (val === undefined || val === null) return false;
+                          const s = String(val).trim().toLowerCase();
+                          return s !== '' && s !== '*' && s !== 'all' && s !== 'none' && s !== 'null' && s !== 'undefined';
+                        };
+                        if (isValidFilterVal(activeLogFilter.name)) {
+                          const filterName = activeLogFilter.name.toLowerCase();
+                          const logName = log.name.toLowerCase();
+                          if (!logName.includes(filterName) && !filterName.includes(logName)) match = false;
+                        }
+                        if (isValidFilterVal(activeLogFilter.event) && !log.event.toLowerCase().includes(activeLogFilter.event.toLowerCase())) match = false;
+                        if (activeLogFilter.success !== undefined && activeLogFilter.success !== null) {
+                          const logSuccess = log.event.includes('Verified') || log.event.includes('Success') || log.event.includes('Unlocked') || log.event.includes('Stored') || log.event.includes('Enrolled');
+                          if (logSuccess !== activeLogFilter.success) match = false;
+                        }
+                        return match;
+                      })
+                      .map((log, idx) => {
+                        const isSuccess = log.event.includes('Verified') || log.event.includes('Success') || log.event.includes('Unlocked') || log.event.includes('Stored') || log.event.includes('Enrolled');
+                        const isFailure = log.event.includes('Denied') || log.event.includes('Rejected') || log.event.includes('Deleted');
+                        const eventClass = isSuccess ? 'event-success' : isFailure ? 'event-failure' : 'event-info';
+                        return (
+                          <div key={idx} className={`timeline-node ${eventClass} py-3 border-b border-white/5`}>
+                            <div className="flex items-start gap-4 hover:bg-white/[0.02] p-2.5 rounded-xl transition-all">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isSuccess ? 'bg-emerald-500/10 text-emerald-400' : isFailure ? 'bg-rose-500/10 text-rose-400' : 'bg-cyan-500/10 text-cyan-400'}`}>
+                                {isSuccess ? <CheckCircle className="w-4 h-4" /> : isFailure ? <AlertTriangle className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-grow min-w-0">
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="text-xs font-bold text-white">{log.name}</span>
+                                  <span className="text-[10px] font-mono text-slate-500">{log.timestamp}</span>
+                                </div>
+                                <p className="text-xs text-slate-300 mt-1">{log.event}</p>
+                                <div className="flex gap-2 mt-2">
+                                  <span className="px-2 py-0.5 bg-white/5 rounded text-[8px] text-slate-400 font-mono">CONFIDENCE: {log.confidence}%</span>
+                                  <span className={`px-2 py-0.5 rounded text-[8px] font-mono ${log.liveness ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>LIVENESS: {log.liveness ? 'PASSED' : 'FAILED'}</span>
                                 </div>
                               </div>
-                            )}
-
-                            {auditResult && (
-                              <div className="text-[10px] bg-white/[0.02] border border-cyan-500/10 p-2.5 rounded-lg text-slate-400 leading-relaxed flex flex-col gap-1 shadow-inner shadow-cyan-500/5">
-                                <span className="font-bold text-cyan-400 border-b border-white/5 pb-1 mb-1 block">AI Audit Critique:</span>
-                                <div className="space-y-1 mt-0.5 text-slate-300">
-                                  {renderMarkdown(auditResult)}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* AI Password Generator Drawer */}
-                            <div className="pt-1">
-                              {showPwGenDrawer ? (
-                                <div className="p-2.5 rounded-lg bg-purple-500/5 border border-purple-500/10 space-y-2.5">
-                                  <div className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">AI Passphrase Generator</div>
-                                  
-                                  {/* Quick Preset Chips */}
-                                  <div className="flex flex-wrap gap-1.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => setPwGenPrompt('Strong password for a secure web portal')}
-                                      className="px-2 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-[9px] text-purple-300 border border-purple-500/10 transition-all"
-                                    >
-                                      + Web Portal
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setPwGenPrompt('High entropy random API credentials')}
-                                      className="px-2 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-[9px] text-purple-300 border border-purple-500/10 transition-all"
-                                    >
-                                      + API Token
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setPwGenPrompt('An easy to remember mnemonic pass phrase')}
-                                      className="px-2 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-[9px] text-purple-300 border border-purple-500/10 transition-all"
-                                    >
-                                      + Mnemonic
-                                    </button>
-                                  </div>
-
-                                  <div className="flex gap-2">
-                                    <input
-                                      value={pwGenPrompt}
-                                      onChange={(e) => setPwGenPrompt(e.target.value)}
-                                      placeholder="Describe purpose (or choose preset)..."
-                                      className="flex-grow bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400 transition-all"
-                                    />
-                                    <button 
-                                      onClick={generateMnemonicPassword}
-                                      disabled={isGeneratingPw}
-                                      type="button"
-                                      className="px-3 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:text-white text-xs font-bold transition-all disabled:opacity-50"
-                                    >
-                                      {isGeneratingPw ? 'Generating...' : 'Generate'}
-                                    </button>
-                                  </div>
-                                  {pwGenExplanation && (
-                                    <div className="text-[9px] text-slate-500 leading-normal italic">
-                                      {pwGenExplanation}
-                                    </div>
-                                  )}
-                                  <button 
-                                    type="button" 
-                                    onClick={() => { setShowPwGenDrawer(false); setPwGenPrompt(''); setPwGenExplanation(''); }}
-                                    className="text-[9px] text-slate-400 hover:underline"
-                                  >
-                                    Close Generator
-                                  </button>
-                                </div>
-                              ) : (
-                                <button 
-                                  type="button"
-                                  onClick={() => setShowPwGenDrawer(true)}
-                                  className="text-[10px] text-purple-400 hover:text-purple-300 hover:underline flex items-center gap-1"
-                                >
-                                  <BrainCircuit className="w-3.5 h-3.5" />
-                                  <span>Generate Secure Password with Local AI</span>
-                                </button>
-                              )}
-                            </div>
-
-                            <div className="flex gap-2">
-                              <button onClick={addSecret} className="flex-1 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-bold hover:opacity-90 transition-all">
-                                Encrypt & Store
-                              </button>
-                              <button onClick={() => { setShowAddSecret(false); setNewSecretLabel(''); setNewSecretValue(''); setAuditResult(''); setPwGenPrompt(''); setPwGenExplanation(''); setShowPwGenDrawer(false); }} className="px-3 py-2 rounded-lg bg-white/5 text-slate-400 text-xs hover:text-white transition-all">
-                                Cancel
-                              </button>
                             </div>
                           </div>
-                        ) : (
-                          <button
-                            onClick={() => setShowAddSecret(true)}
-                            className="w-full mt-2 py-2 rounded-lg border border-dashed border-white/10 text-xs text-slate-400 hover:text-cyan-400 hover:border-cyan-400/30 transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            Add Secret
-                          </button>
-                        )}
-                      </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'settings' ? (
+            /* System settings tab container */
+            <div className="max-w-2xl mx-auto tech-panel rounded-3xl p-6 shadow-purple-glow">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <Cog className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <h2 className="text-base font-bold text-white tracking-wide font-display">SYSTEM MANAGEMENT STACKS</h2>
+                    <p className="text-[10px] text-slate-400 font-mono">SYSTEM INTERACTION POOLS DIAGNOSTICS</p>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab('dashboard')} className="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-bold transition-all border border-white/5">Dashboard Hub</button>
+              </div>
+
+              <div className="space-y-6 text-xs text-slate-300">
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-4">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">QWEN COGNITIVE AI CONFIG</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-[10px]">
+                    <div>
+                      <span className="text-slate-500">RAM Status: </span>
+                      <span className="font-bold text-white">{aiCoreStatus.loaded ? '1.5 GB Allocated' : '0.0 GB (8.0 GB max limit)'}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-slate-500">Execution Limit: </span>
+                      <span className="font-bold text-white">{aiCoreStatus.threads} Threads / 99 GPU Layers</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    {aiCoreStatus.loaded ? (
+                      <button onClick={unloadLLM} disabled={isControllingLLM} className="flex-grow py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 font-bold transition-all">Purge LLM from RAM</button>
+                    ) : (
+                      <button onClick={preloadLLM} disabled={isControllingLLM} className="flex-grow py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 font-bold transition-all">Pre-warm AI Core</button>
                     )}
                   </div>
-
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
 
-      </main>
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">BIOMETRIC LIVENESS CONTROLS</h3>
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span>Eye Aspect Ratio (EAR) Blink Threshold:</span>
+                    <span className="font-bold text-cyan-400 font-mono">0.18 (Closed) / 0.22 (Open)</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
+                    <span>Temporal Blink Check Duration:</span>
+                    <span className="font-bold text-cyan-400 font-mono">2800ms Time Window</span>
+                  </div>
+                </div>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-6 px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
-        <p>© 2026 AEGIS CORE. Neural Biometric Gateway.</p>
-        <div className="flex gap-4">
-          <a href="#" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
-          <span>·</span>
-          <a href="#" className="hover:text-cyan-400 transition-colors">Security Architecture</a>
-        </div>
-      </footer>
-
-      {/* Floating AI Security Assistant Chatbot */}
-      {isLoggedIn && (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-          <AnimatePresence>
-            {chatOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 50, scale: 0.9 }}
-                className="chat-panel w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col mb-4 overflow-hidden"
-              >
-                {/* Chat Header */}
-                <div className="p-4 bg-gradient-to-r from-cyan-950/40 to-purple-950/40 border-b border-white/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <BrainCircuit className="w-5 h-5 text-cyan-400 animate-pulse" />
-                    <div>
-                      <h4 className="font-bold text-sm text-white font-display">AI Security Assistant</h4>
-                      <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-display">
-                        {aiCoreStatus.threads === 0 ? "Google Gemini 2.5" : "Local Qwen 1.5B"}
-                      </p>
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">DATABASE REGISTRY STATS</h3>
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div className="p-2.5 bg-[#070a13] rounded-xl border border-white/5">
+                      <p className="text-lg font-bold text-white">{stats.logins}</p>
+                      <p className="text-[7px] text-slate-500 uppercase tracking-widest font-mono">TOTAL LOGINS</p>
+                    </div>
+                    <div className="p-2.5 bg-[#070a13] rounded-xl border border-white/5">
+                      <p className="text-lg font-bold text-white">{stats.registered}</p>
+                      <p className="text-[7px] text-slate-500 uppercase tracking-widest font-mono">PROFILES SECURED</p>
+                    </div>
+                    <div className="p-2.5 bg-[#070a13] rounded-xl border border-white/5">
+                      <p className="text-lg font-bold text-emerald-400">100%</p>
+                      <p className="text-[7px] text-slate-500 uppercase tracking-widest font-mono">ACCURACY METRICS</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setChatOpen(false)}
-                    className="text-xs text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg transition-all"
-                  >
-                    Close
-                  </button>
                 </div>
+              </div>
+            </div>
+          ) : activeTab === 'chat' ? (
+            /* AI Cognitive Chatbot tab */
+            <div className="max-w-3xl mx-auto tech-panel rounded-3xl h-[500px] flex flex-col overflow-hidden shadow-purple-glow">
+              <div className="p-4 bg-gradient-to-r from-cyan-950/20 to-purple-950/20 border-b border-white/5 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
+                  <div>
+                    <h3 className="text-sm font-bold text-white tracking-wide font-display">AEGIS COGNITIVE SECURITY ASSISTANT</h3>
+                    <p className="text-[9px] text-slate-400 uppercase tracking-widest font-mono font-bold">MODEL: Local Qwen 1.5B (Active)</p>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab('dashboard')} className="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-bold border border-white/5">Dashboard Hub</button>
+              </div>
 
-                {/* Messages Body */}
-                <div className="flex-grow p-4 overflow-y-auto space-y-3 text-xs scrollbar-thin scrollbar-thumb-white/5">
-                  {chatMessages.map((msg, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 leading-relaxed ${
-                        msg.role === 'user' 
-                          ? 'bg-cyan-900/50 text-white border border-cyan-500/30 shadow-md' 
-                          : 'bg-slate-900/90 text-slate-200 border border-white/10 shadow-md'
-                      }`}>
-                        {msg.role === 'user' ? msg.content : <div className="space-y-1 flex flex-col gap-1">{renderMarkdown(msg.content)}</div>}
+              <div className="flex-grow p-4 overflow-y-auto space-y-3.5 text-xs scroll-dark">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-xl px-4 py-3 leading-relaxed shadow ${msg.role === 'user' ? 'bg-cyan-950/60 text-white border border-cyan-500/30' : 'bg-slate-900/90 text-slate-200 border border-white/5'}`}>
+                      {msg.role === 'user' ? msg.content : <div className="space-y-1">{renderMarkdown(msg.content)}</div>}
+                    </div>
+                  </div>
+                ))}
+                {isSendingChat && (
+                  <div className="flex justify-start">
+                    <div className="bg-slate-900/90 border border-white/5 text-purple-400 rounded-xl px-4 py-3 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="px-4 pb-2.5 pt-1.5 flex gap-2 overflow-x-auto scrollbar-none shrink-0 bg-slate-950/40 border-t border-white/5">
+                <button type="button" onClick={() => setChatInput("Analyze recent system logs")} className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white shrink-0">🔍 Audit Logs</button>
+                <button type="button" onClick={() => setChatInput("How can I improve the vault security score?")} className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white shrink-0">🛡️ Improve Score</button>
+                <button type="button" onClick={() => setChatInput("Suggest optimization tips for local AI execution")} className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white shrink-0">⚡ RAM Optimizer Tips</button>
+              </div>
+
+              <form onSubmit={sendChatMessage} className="p-3 bg-slate-950/60 border-t border-white/5 flex gap-2 shrink-0">
+                <input value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Query AI assistant..." className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-400" />
+                <button type="submit" disabled={isSendingChat || !chatInput.trim()} className="px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:opacity-90 font-bold disabled:opacity-30 text-xs">Send</button>
+              </form>
+            </div>
+          ) : null}
+        </main>
+
+        {/* Floating AI Chatbot overlay drawer (only if tab isn't already active chat) */}
+        {isLoggedIn && activeTab !== 'chat' && (
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end animate-bounce">
+            <AnimatePresence>
+              {chatOpen && (
+                <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.9 }} className="chat-panel w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col mb-4 overflow-hidden">
+                  <div className="p-4 bg-gradient-to-r from-cyan-950/40 to-purple-950/40 border-b border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BrainCircuit className="w-5 h-5 text-cyan-400 animate-pulse" />
+                      <div>
+                        <h4 className="font-bold text-sm text-white font-display">AI Security Assistant</h4>
+                        <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-display">Local Qwen 1.5B</p>
                       </div>
                     </div>
-                  ))}
-                  {isSendingChat && (
-                    <div className="flex justify-start">
-                      <div className="bg-slate-900/90 border border-white/10 text-cyan-400 rounded-xl px-3.5 py-2.5 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <button onClick={() => setChatOpen(false)} className="text-xs text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg">Close</button>
+                  </div>
+                  <div className="flex-grow p-4 overflow-y-auto space-y-3 text-xs scroll-dark">
+                    {chatMessages.map((msg, idx) => (
+                      <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 leading-relaxed ${msg.role === 'user' ? 'bg-cyan-900/50 text-white border border-cyan-500/30' : 'bg-slate-900/90 text-slate-200 border border-white/10'}`}>{msg.role === 'user' ? msg.content : <div className="space-y-1">{renderMarkdown(msg.content)}</div>}</div>
                       </div>
-                    </div>
-                  )}
-                  <div ref={chatEndRef} />
-                </div>
+                    ))}
+                    {isSendingChat && (
+                      <div className="flex justify-start">
+                        <div className="bg-slate-900/90 border border-white/10 text-cyan-400 rounded-xl px-3.5 py-2.5 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+                  <div className="px-3 pb-2 pt-1 flex gap-1.5 overflow-x-auto scrollbar-none shrink-0 bg-slate-950/20">
+                    <button type="button" onClick={() => setChatInput("Analyze recent system logs")} className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white shrink-0">🔍 Audit Logs</button>
+                    <button type="button" onClick={() => setChatInput("How can I improve the vault security score?")} className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white shrink-0">🛡️ Improve Score</button>
+                    <button type="button" onClick={() => setChatInput("Suggest optimization tips for local AI execution")} className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white shrink-0">⚡ RAM Optimizer Tips</button>
+                  </div>
+                  <form onSubmit={sendChatMessage} className="p-3 bg-slate-950/40 border-t border-white/5 flex gap-2">
+                    <input value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Ask about logs..." className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                    <button type="submit" disabled={isSendingChat || !chatInput.trim()} className="px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold disabled:opacity-30 text-xs">Send</button>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.button whileHover={{ scale: 1.08, boxShadow: '0 0 24px rgba(6, 182, 212, 0.4)' }} whileTap={{ scale: 0.95 }} onClick={() => setChatOpen(prev => !prev)} className="w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 text-white flex items-center justify-center shadow-lg border border-white/10 shadow-purple-glow"><BrainCircuit className="w-6 h-6" /></motion.button>
+          </div>
+        )}
 
-                {/* Quick Action Prompt Chips */}
-                <div className="px-3 pb-2 pt-1 flex gap-1.5 overflow-x-auto scrollbar-none shrink-0 bg-slate-950/20">
-                  <button
-                    type="button"
-                    onClick={() => setChatInput("Analyze recent system logs")}
-                    className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white hover:bg-white/10 shrink-0 transition-all"
-                  >
-                    🔍 Audit Logs
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setChatInput("How can I improve the vault security score?")}
-                    className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white hover:bg-white/10 shrink-0 transition-all"
-                  >
-                    🛡️ Improve Score
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setChatInput("Suggest optimization tips for local AI execution")}
-                    className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] text-slate-300 hover:text-white hover:bg-white/10 shrink-0 transition-all"
-                  >
-                    ⚡ RAM Optimizer Tips
-                  </button>
-                </div>
-
-                {/* Chat Input Footer */}
-                <form 
-                  onSubmit={sendChatMessage}
-                  className="p-3 bg-slate-950/40 border-t border-white/5 flex gap-2"
-                >
-                  <input
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask about logs, security suggestions..."
-                    className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all"
-                  />
-                  <button 
-                    type="submit"
-                    disabled={isSendingChat || !chatInput.trim()}
-                    className="px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:opacity-90 transition-all font-bold disabled:opacity-30"
-                  >
-                    Send
-                  </button>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Toggle Button */}
-          <motion.button
-            whileHover={{ scale: 1.08, boxShadow: '0 0 24px rgba(6, 182, 212, 0.4)' }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setChatOpen(prev => !prev)}
-            className="w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 text-white flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-white/10"
-          >
-            <BrainCircuit className="w-6 h-6" />
-          </motion.button>
-        </div>
-      )}
-
+        {/* Footer */}
+        <footer className="border-t border-white/5 py-4 px-6 flex justify-between items-center text-[10px] text-slate-500 shrink-0 bg-[#0a0d1a]/20">
+          <p>© 2026 AEGIS CORE. Neural Biometric Gateway.</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
+            <span>·</span>
+            <a href="#" className="hover:text-cyan-400 transition-colors">Security Architecture</a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
