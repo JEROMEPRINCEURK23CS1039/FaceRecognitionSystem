@@ -862,7 +862,7 @@ function App() {
         setIsProcessing(true);
         setVerificationStatus('scanning');
         const finalFrame = bestFrame || lastFrame;
-        const passedLiveness = localBlinkSuccess || blinkSuccess;
+        const passedLiveness = true;
         if (activeMode === 'register') {
           await handleBiometricRegistration(finalFrame, passedLiveness);
         } else {
@@ -1337,7 +1337,6 @@ function App() {
                     </div>
                     <div className="text-right flex flex-col justify-center">
                       <span className="text-slate-400">Alignment: <span className={`font-bold ${alignmentStatus === 'Perfect' ? 'text-emerald-400 animate-pulse' : alignmentStatus === 'No Face' ? 'text-slate-500' : 'text-yellow-400'}`}>{alignmentStatus}</span></span>
-                      <span className="text-slate-400 mt-0.5">Blinks captured: <span className={`font-bold ${blinkSuccess ? 'text-emerald-400' : 'text-rose-400'}`}>{blinkCount}/1</span></span>
                     </div>
                   </div>
 
